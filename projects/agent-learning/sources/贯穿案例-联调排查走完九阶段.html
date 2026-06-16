@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一个案子走完九阶段 · 联调排查贯穿例</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15191E; --slate-700:#3a4654; --slate-500:#697686; --slate-300:#c3cbd5;
+    --line:#e6e3dc; --paper:#FBFAF7; --paper-elev:#FFFFFF;
+    --accent:#2546E0; --accent-soft:#eef1fe;
+    --pain:#B23A2E; --pain-soft:#fbf0ee;
+    --design:#2C7A52; --design-soft:#eef6f0;
+    --amber:#B9821E; --amber-soft:#fbf2e0;
+    --bg:var(--paper); --surface:var(--paper-elev); --text:var(--ink);
+    --text-2:var(--slate-700); --text-3:var(--slate-500); --border:var(--line);
+    --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px;
+    --radius:14px; --maxw:1080px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;padding:var(--s5) var(--s3);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;}
+  .serif{font-family:"Lora","PingFang SC","Microsoft YaHei",serif;}
+
+  .masthead{border-bottom:2px solid var(--ink);padding-bottom:var(--s3);margin-bottom:var(--s4);}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:var(--s2);}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;}
+  .deck{margin-top:var(--s2);font-size:16px;color:var(--text-2);max-width:66ch;}
+  .crumb{display:inline-block;margin-top:var(--s2);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:999px;}
+
+  /* 案情卡 */
+  .case{background:var(--ink);color:#f5f3ee;border-radius:var(--radius);padding:var(--s4);margin-bottom:var(--s5);}
+  .case .tag{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9fb0ff;font-weight:700;margin-bottom:var(--s2);}
+  .case .scene{font-size:clamp(16px,2.2vw,19px);line-height:1.6;font-weight:500;}
+  .case .scene b{color:#fff;font-weight:700;box-shadow:inset 0 -.5em 0 rgba(37,70,224,.4);}
+  .case .ask{margin-top:14px;font-size:14px;color:#cfd4dc;}
+  .case .ask b{color:#9fb0ff;}
+
+  .seclabel{display:flex;align-items:baseline;gap:var(--s2);margin:var(--s5) 0 var(--s3);}
+  .seclabel .n{font-family:"Lora",serif;font-size:14px;color:var(--accent);font-weight:700;}
+  .seclabel h2{font-size:22px;font-weight:700;letter-spacing:-.01em;}
+  .seclabel .hint{font-size:13px;color:var(--text-3);margin-left:auto;font-weight:500;}
+
+  /* 时间轴 */
+  .timeline{position:relative;padding-left:56px;}
+  .timeline::before{content:"";position:absolute;left:19px;top:6px;bottom:20px;width:2px;background:linear-gradient(var(--slate-300),var(--border));}
+  .scene-stage{position:relative;margin-bottom:var(--s3);}
+  .node{position:absolute;left:-56px;top:0;width:40px;height:40px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:"Lora",serif;font-weight:700;font-size:16px;color:var(--ink);z-index:2;}
+  .scene-stage.pivot .node{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 2px rgba(20,25,30,.04);}
+  .scard-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px var(--s3);border-bottom:1px solid var(--border);background:#fdfcfa;}
+  .scard-head .name{font-size:17px;font-weight:700;}
+  .scard-head .cap{font-size:12.5px;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:2px 10px;border-radius:999px;}
+  .scard-body{padding:var(--s3);}
+  /* 此刻发生 */
+  .happen{font-size:14.5px;color:var(--text);line-height:1.7;}
+  .happen .who{font-weight:700;}
+  .happen .who.u{color:var(--pain);}
+  .happen .who.a{color:var(--accent);}
+  .happen .quote{display:block;margin:8px 0;padding:10px 14px;background:#f6f5f1;border-left:3px solid var(--slate-300);border-radius:0 8px 8px 0;font-size:14px;color:var(--text-2);}
+  /* 补了什么 / 没有它会怎样 */
+  .twin{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-top:var(--s3);}
+  .tw{border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;}
+  .tw .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+  .tw.add{background:var(--design-soft);} .tw.add .l{color:var(--design);} .tw.add .l::before{content:"+";font-size:14px;font-weight:800;}
+  .tw.lack{background:var(--pain-soft);} .tw.lack .l{color:var(--pain);} .tw.lack .l::before{content:"−";font-size:14px;font-weight:800;}
+  .tw .b{color:var(--text-2);} .tw .b b{color:var(--text);}
+  .connector{display:flex;align-items:center;gap:10px;margin:0 0 var(--s3) 4px;color:var(--text-3);font-size:12.5px;font-weight:600;}
+  .connector::before{content:"";width:18px;height:2px;background:var(--slate-300);}
+
+  /* 结尾对照 */
+  .recap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--s4);}
+  .recap .rrow{display:flex;gap:14px;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--border);}
+  .recap .rrow:last-child{border-bottom:none;}
+  .recap .rn{font-family:"Lora",serif;font-weight:700;color:var(--accent);width:20px;flex-shrink:0;}
+  .recap .rk{font-weight:700;width:160px;flex-shrink:0;font-size:14px;}
+  .recap .rv{font-size:13.5px;color:var(--text-2);line-height:1.55;}
+
+  .foot{text-align:center;color:var(--text-3);font-size:12px;margin-top:var(--s5);padding-top:var(--s3);border-top:1px solid var(--border);}
+  .foot .credit{display:inline-block;margin-top:6px;font-size:11px;color:var(--slate-300);}
+
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}}
+
+  @media (max-width:760px){
+    body{padding:var(--s3) var(--s2);}
+    .twin{grid-template-columns:1fr;}
+    .timeline{padding-left:44px;} .timeline::before{left:15px;} .node{left:-44px;width:32px;height:32px;font-size:14px;}
+    .recap .rk{width:auto;}
+    .recap .rrow{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--BODY-->
+  <header class="masthead">
+    <div class="kicker">内部学习稿 · 一个例子讲透九阶段</div>
+    <h1>同一个案子<span class="serif" style="font-weight:700">,走完九个阶段</span></h1>
+    <p class="deck">演进图讲的是抽象原理,这里换种讲法:拿<b>一个真实的联调排查工单</b>,让它从头穿过九个阶段。每一阶段只看一件事 —— <b>到这一步,Agent 多了什么能力,这个案子因此能往前走一格</b>。同一个故事讲九遍,比九个名词好记。</p>
+    <div class="crumb">配合《Agent 演进图》九阶段对照看</div>
+  </header>
+
+  <section class="case reveal">
+    <div class="tag">案情 · 贯穿全文的那一个工单</div>
+    <p class="scene">某接入方的技术对接群里发来一句:<br>「你们的<b>回调签名验证一直失败</b>,接口对接卡住了,帮忙看下?」</p>
+    <p class="ask">这是你手册「联调排查」链路最典型的一单。<b>我们就看:从一个只会聊天的 LLM,到能真正把这单办结的 Agent,中间每一阶段补上了什么。</b></p>
+  </section>
+
+  <div class="seclabel"><span class="n">▸</span><h2>这一单的九步成长</h2><span class="hint">绿块 = 这阶段补了什么 · 红块 = 缺它会怎样</span></div>
+
+  <div class="timeline">
+
+    <!-- 1 LLM -->
+    <div class="scene-stage reveal">
+      <div class="node">1</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">LLM</span><span class="cap">只会聊天</span></div>
+        <div class="scard-body">
+          <div class="happen">把这句话直接丢给一个裸 LLM,它会<span class="who a">泛泛地讲</span>:
+            <span class="quote">「签名失败通常有几种原因:密钥不对、参数排序错误、时间戳过期……建议逐一排查。」</span>
+            话没错,但它<span class="who u">不知道我们的签名算法是什么、这个接入方是谁、日志在哪</span> —— 等于一份网上随处可见的通用答案。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">理解人话、生成通顺回答</div></div>
+            <div class="tw lack"><div class="l">这一单卡在哪</div><div class="b">不懂我们的<b>业务、不能查、没记性</b>,只能给套话</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">想让它懂我们的签名规则 →</div>
+
+    <!-- 2 记忆 -->
+    <div class="scene-stage reveal">
+      <div class="node">2</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">记忆</span><span class="cap">记得住对话</span></div>
+        <div class="scard-body">
+          <div class="happen">技术支持追问:<span class="quote">「他们用的是 V2 签名,你按这个继续。」</span>有了记忆,Agent <span class="who a">记住了"这一单是 V2 签名"</span>,后面整段对话不用反复重申;也记得这个接入方上周刚问过回调地址的事。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">跨轮次、跨会话<b>记住上下文</b>,不再每句话都失忆</div></div>
+            <div class="tw lack"><div class="l">仍然卡在哪</div><div class="b">记住了"是 V2",但<b>V2 的算法细节它还是不知道</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">V2 签名规则写在内部文档里 →</div>
+
+    <!-- 3 RAG -->
+    <div class="scene-stage reveal">
+      <div class="node">3</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">RAG</span><span class="cap">查得到内部文档</span></div>
+        <div class="scard-body">
+          <div class="happen">Agent 去<span class="who a">检索内部《签名规则文档》</span>,捞到 V2 的具体步骤(参数字典序拼接、HMAC-SHA256、时间戳 5 分钟有效),据此回答:
+            <span class="quote">「V2 要求参数按字典序拼接后再签名,请先确认你们的拼接顺序。另外时间戳超过 5 分钟会失效。」</span>
+            如果文档里没有,它会<span class="who u">明说"未找到依据"</span>,而不是编一个。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">回答<b>基于我们的真实文档</b>,有据可查、不瞎编</div></div>
+            <div class="tw lack"><div class="l">仍然卡在哪</div><div class="b">能讲规则,但<b>没法真的去看这单的失败日志</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">得让它真的去查这一单的日志 →</div>
+    <!-- 4 Function Call & MCP -->
+    <div class="scene-stage pivot reveal">
+      <div class="node">4</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Function Call & MCP</span><span class="cap">能动手调接口</span></div>
+        <div class="scard-body">
+          <div class="happen">Agent 这次不只是"说",它<span class="who a">输出一个调用指令</span>:调日志查询接口、传入这个接入方的 appKey 和时间段。代码侧真的去执行、把日志捞回来。它发现:
+            <span class="quote">「日志显示:你们提交的 timestamp 比服务器时间晚了 8 分钟 —— 超过了 5 分钟有效期。」</span>
+            注意:<span class="who u">决定"查日志"的是 LLM,真正执行查询的是代码</span> —— 这道分离是后面所有安全的根。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">从"只会说"到<b>"能调真实接口拿真实数据"</b></div></div>
+            <div class="tw lack"><div class="l">仍然卡在哪</div><div class="b">单次调一个接口够了,但<b>这一单要查日志→对参数→比时间,好几步</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">多步排查,谁来串起来 →</div>
+
+    <!-- 5 Agent Loop -->
+    <div class="scene-stage pivot reveal">
+      <div class="node">5</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Agent Loop</span><span class="cap">自己串多步</span></div>
+        <div class="scard-body">
+          <div class="happen">现在它能<span class="who a">自己跑一个排查循环</span>:查日志 → 看到时间戳异常 → 决定再核对一下参数拼接顺序 → 调接口比对 → 确认拼接也有个小问题 → 汇总。<span class="who u">查了第一步才知道第二步查什么</span> —— 这正是 ReAct「想→做→看→再想」。</div>
+          <div class="quote">「定位到两个问题:① 时间戳超时(主因);② 参数 <code>amount</code> 没参与签名。修复:校准服务器时间 + 把 amount 纳入拼接。」</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">把多步排查<b>自动串成一条链</b>,边查边调整方向</div></div>
+            <div class="tw lack"><div class="l">仍然卡在哪</div><div class="b">这单它会查了,但<b>"续租失败""号池耗尽"等几十种问题,它每次都从零摸索</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">把"签名失败排查"沉淀成固定打法 →</div>
+
+    <!-- 6 Skill -->
+    <div class="scene-stage reveal">
+      <div class="node">6</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Skill</span><span class="cap">按 SOP 精准排查</span></div>
+        <div class="scard-body">
+          <div class="happen">我们把"签名失败排查"做成一个 <span class="who a">Skill(SOP + 专用工具 + 历史案例库)</span>。Agent 一识别出是签名问题,就加载这个能力包,<span class="who u">按固定步骤排查</span>,而不是临场发挥。平时它只看一句"我会排查签名问题"的摘要,命中了才展开完整手册 —— 省下大量上下文。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">把老师傅的排查经验<b>固化成可复用的 SOP</b>,又快又稳又省 token</div></div>
+            <div class="tw lack"><div class="l">仍然卡在哪</div><div class="b">单个 Agent 同时背排查、分析、写报告<b>多个角色时会精神分裂</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">复杂工单要多个专家协作 →</div>
+    <!-- 7 Multi-Agent -->
+    <div class="scene-stage reveal">
+      <div class="node">7</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Multi-Agent</span><span class="cap">专家分工(按需)</span></div>
+        <div class="scard-body">
+          <div class="happen">假设这一单升级了:不只是排查,还要<span class="who a">同时分析这个接入方近 7 天的失败趋势、再写一份对外回复</span>。一个脑子忙不过来,于是拆成:排查专家 + 数据分析专家 + 写作专家,一个协调者统筹。<span class="who u">但只有真扛不住才拆</span> —— 单这一单,其实一个 Agent + 多 Skill 就够,不必开"项目组"。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">复杂任务可<b>拆给多个专家并行</b>,各管一摊、互不干扰</div></div>
+            <div class="tw lack"><div class="l">要警惕</div><div class="b">拆一次<b>成本和协调复杂度翻倍</b>,不到必要别拆</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">这些能力要真上线,扛得住意外吗 →</div>
+
+    <!-- 8 Harness -->
+    <div class="scene-stage pivot reveal">
+      <div class="node">8</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Harness</span><span class="cap">上线护甲</span></div>
+        <div class="scard-body">
+          <div class="happen">真实流量里什么都可能出:日志接口偶发超时(<span class="who a">自动重试</span>)、模型想反复调同一个挂掉的接口(<span class="who a">迭代上限掐断</span>)、它想调一个"重置接入方密钥"的高危操作(<span class="who u">挡下来,转人工审核</span>)、整单的排查轨迹全程留痕便于复盘(<span class="who a">且 appsecret 不落日志</span>)。这层护甲不改变它怎么排查,只保证它<span class="who u">活得久、不闯祸、出事查得到</span>。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">从"demo 能跑"到<b>"敢上生产" —— 容错、限流、审核、可观测</b></div></div>
+            <div class="tw lack"><div class="l">形态还能再进一步</div><div class="b">它仍在服务端,<b>给出修复建议后还得人去操作</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector">让它直接动手,而不只是给建议 →</div>
+
+    <!-- 9 Claw -->
+    <div class="scene-stage reveal">
+      <div class="node">9</div>
+      <div class="scard">
+        <div class="scard-head"><span class="name">Claw</span><span class="cap">本地端 · 直接动手</span></div>
+        <div class="scard-body">
+          <div class="happen">最终形态:Agent 跑在对接同学的电脑上,<span class="who a">直接打开他们的代码、定位拼接签名那段、改好、跑一遍验证、提个 PR</span>,而不是只甩一句"请把 amount 纳入签名"。<span class="who u">"说"和"做"之间的断层被消除了</span> —— 但它能直接碰本地系统,所以权限和授权要求也最高。</div>
+          <div class="twin">
+            <div class="tw add"><div class="l">这阶段的能力</div><div class="b">闭合<b>决策→执行→验证</b>,从"远程顾问"变"贴身秘书"</div></div>
+            <div class="tw lack"><div class="l">代价</div><div class="b">能力越贴近真实系统,<b>权限边界和安全要求越重</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 结尾对照 -->
+  <div class="seclabel"><span class="n">▸</span><h2>一页回看:每一步给这单加了什么</h2></div>
+  <div class="recap reveal">
+    <div class="rrow"><span class="rn">1</span><span class="rk">LLM</span><span class="rv">给通用套话,不懂我们业务</span></div>
+    <div class="rrow"><span class="rn">2</span><span class="rk">记忆</span><span class="rv">记住"这单是 V2 签名",对话连续</span></div>
+    <div class="rrow"><span class="rn">3</span><span class="rk">RAG</span><span class="rv">查内部文档,讲出 V2 的真实规则,没依据就明说</span></div>
+    <div class="rrow"><span class="rn">4</span><span class="rk">Function Call</span><span class="rv">真的去调日志接口,发现时间戳超时</span></div>
+    <div class="rrow"><span class="rn">5</span><span class="rk">Agent Loop</span><span class="rv">自己串多步:查日志→比参数→定位双重病因</span></div>
+    <div class="rrow"><span class="rn">6</span><span class="rk">Skill</span><span class="rv">把排查打法固化成 SOP,又快又稳又省</span></div>
+    <div class="rrow"><span class="rn">7</span><span class="rk">Multi-Agent</span><span class="rv">复杂时拆排查/分析/写作专家(按需,克制)</span></div>
+    <div class="rrow"><span class="rn">8</span><span class="rk">Harness</span><span class="rv">容错重试、掐死循环、高危转人工、全程留痕</span></div>
+    <div class="rrow"><span class="rn">9</span><span class="rk">Claw</span><span class="rv">本地直接改代码、验证、提 PR,闭合执行</span></div>
+  </div>
+
+  <div class="foot">
+    《Agent 演进图 · 深度注解版》的贯穿案例篇 · 主线取自手册「联调排查」任务链<br>
+    <span class="credit">设计应用 UI/UX Pro Max skill · Swiss/Corporate Minimal · WCAG AA · 一例贯穿九阶段</span>
+  </div>
+
+</div>
+<script>
+  const els=document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.1});
+    els.forEach(el=>io.observe(el));
+  } else { els.forEach(el=>el.classList.add('in')); }
+</script>
+</body>
+</html>

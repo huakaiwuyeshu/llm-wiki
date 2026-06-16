@@ -1,0 +1,1017 @@
+
+===== PDF PAGE 437 =====
+第十二章 智能体性能评估
+ 
+在前面的章节中，我们构建了 HelloAgents 框架的核心功能，实现了多种智能体范式、工具系统、记忆机制
+和强化学习训练等。在构建智能体系统时，我们还需要解决一个核心问题：如何客观地评估智能体的性能？ 
+具体来说，我们需要回答以下问题：
+1. 智能体是否具备预期的能力？
+2. 在不同任务上的表现如何？
+3. 与其他智能体相比处于什么水平？
+本章将为 HelloAgents 增加性能评估系统（Evaluation System）。我们将深入理解智能体评估的理论基
+础，并实现评估的工具。
+12.1 智能体评估基础
+ 
+12.1.1 为何需要智能体评估
+ 
+我们现在的 SimpleAgent，它已经具备了强大的推理和工具调用能力。让我们看一个典型的使用场景：
+这个智能体能正常工作，但我们面临一个核心问题：如何客观地评估它的性能？当我们优化提示词或更换 
+LLM 模型后，如何知道是否真的有改进？在部署到生产环境前，如何保证智能体的可靠性？这些问题都需要
+通过系统化的评估来解决。
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import SearchTool
+# 创建LLM和智能体
+llm = HelloAgentsLLM()
+# 创建一个强调工具使用的系统提示词
+system_prompt = """你是一个AI助手，可以使用搜索工具来获取最新信息。
+当需要搜索信息时，请使用以下格式：
+[TOOL_CALL:search:搜索关键词]
+例如：
+- [TOOL_CALL:search:最新AI新闻]
+- [TOOL_CALL:search:Python编程教程]
+请在回答问题前先使用搜索工具获取最新信息。"""
+agent = SimpleAgent(name="AI助手", llm=llm, system_prompt=system_prompt)
+# 添加搜索工具
+agent.add_tool(SearchTool())
+# 示例：使用搜索工具回答问题
+response = agent.run("最新的AI技术发展趋势是什么？")
+print(f"\n回答：{response}")
+
+===== PDF PAGE 438 =====
+智能体评估的核心价值在于提供标准化的方法来衡量智能体的能力。通过评估，我们可以用具体的数字指标
+量化智能体的表现，客观比较不同设计方案的优劣，及时发现智能体在特定场景下的弱点，并向用户证明智
+能体的可靠性。
+与传统软件测试不同，智能体评估面临着独特的挑战。首先是输出的不确定性，同一问题可能有多个正确答
+案，很难用简单的对错来判断。其次是评估标准的多样性，不同任务需要不同的评估方法，工具调用需要检
+查函数签名，问答任务需要评估语义相似度。最后是评估成本的高昂，每次评估都需要大量的 API 调用，成
+本可能达到数百元甚至更多。
+为了应对这些挑战，学术界和工业界提出了多个标准化的评估基准（Benchmark）。这些基准提供了统一
+的数据集、评估指标和评分方法，使我们能够在相同的标准下评估和对比不同的智能体系统。
+12.1.2 主流评估基准概览
+ 
+智能体评估领域已经涌现出多个具有影响力的基准测试。下面介绍一些主流的评估基准和指标：
+（1）工具调用能力评估
+工具调用是智能体的核心能力之一。智能体需要理解用户意图，选择合适的工具，并正确构造函数调用。相
+关的评估基准包括：
+BFCL (Berkeley Function Calling Leaderboard)[1]：UC Berkeley 推出，包含 1120+测试样本，涵
+盖 simple、multiple、parallel、irrelevance 四个类别，使用 AST 匹配算法评估，数据集规模适中，
+社区活跃。
+ToolBench[2]：清华大学推出，包含 16000+真实 API 调用场景，覆盖真实世界的复杂工具使用场景。
+API-Bank[3]：Microsoft Research 推出，包含 53 个常用 API 工具，专注于评估智能体对 API 文档的
+理解和调用能力。
+（2）通用能力评估
+评估智能体在真实世界任务中的综合表现，包括多步推理、知识运用、多模态理解等能力：
+GAIA (General AI Assistants)[4]：Meta AI 和 Hugging Face 联合推出，包含 466 个真实世界问题，
+分为 Level 1/2/3 三个难度级别，评估多步推理、工具使用、文件处理、网页浏览等能力，使用准精确
+匹配（Quasi Exact Match）算法，任务真实且综合性强。
+AgentBench[5]：清华大学推出，包含 8 个不同领域的任务，全面评估智能体的通用能力。
+WebArena[6]：CMU 推出，评估智能体在真实网页环境中的任务完成能力和网页交互能力。
+（3）多智能体协作评估
+评估多个智能体协同工作的能力：
+ChatEval[7]：评估多智能体对话系统的质量。
+SOTOPIA[8]：评估智能体在社交场景中的互动能力。
+自定义协作场景：根据具体应用场景设计的评估任务。
+（4）常用评估指标
+不同基准使用不同的评估指标，常见的包括：
+
+===== PDF PAGE 439 =====
+准确性指标：Accuracy（准确率）、Exact Match（精确匹配）、F1 Score（F1 分数），用于衡量答案
+的正确性。
+效率指标：Response Time（响应时间）、Token Usage（Token 使用量），用于衡量执行效率。
+鲁棒性指标：Error Rate（错误率）、Failure Recovery（故障恢复），用于衡量容错能力。
+协作指标：Communication Efficiency（通信效率）、Task Completion（任务完成度），用于衡量协
+作效果。
+12.1.3 HelloAgents 评估体系设计
+ 
+考虑到学习曲线和实用性，本章将重点介绍以下评估场景：
+1. BFCL：评估工具调用能力
+选择理由：数据集规模适中，评估指标清晰，社区活跃
+适用场景：评估智能体的函数调用准确性
+2. GAIA：评估通用 AI 助手能力
+选择理由：任务真实，难度分级，综合性强
+适用场景：评估智能体的综合问题解决能力
+3. 数据生成质量评估：评估 LLM 生成数据质量
+选择理由：通过这个案例可以完整体验如何使用 Agent 创造数据，评估数据的完整演示。
+适用场景：评估生成的训练数据、测试数据的质量
+评估方法：LLM Judge、Win Rate、人工验证
+通过这三个评估场景，我们将构建一个完整的评估体系，如图 12.1 展示了我们的评估系统构建思路。
+图 12.1 HelloAgents 评估体系架构图
+ 
+12.1.4 本章学习目标与快速体验
+ 
+让我们先看看第十二章的学习内容：
+hello_agents/
+├── evaluation/                         # 评估模块
+│   └── benchmarks/                     # 评估基准实现
+│       ├── bfcl/                       # BFCL评估实现
+│       │   ├── dataset.py              # BFCL数据集加载器
+│       │   ├── evaluator.py            # BFCL评估器（AST匹配）
+│       │   ├── metrics.py              # BFCL专用指标
+
+===== PDF PAGE 440 =====
+对于这一章的内容，学习目标是掌握应用评估工具的能力。让我们先准备好开发环境：
+在接下来的章节中，我们将深入学习每种评估方法的详细用法和介绍。
+12.2 BFCL：工具调用能力评估
+ 
+12.2.1 BFCL 基准介绍
+ 
+BFCL (Berkeley Function Calling Leaderboard) 是由加州大学伯克利分校推出的函数调用能力评估基准[1]。
+在智能体系统中，工具调用（Tool Calling）是核心能力之一。智能体需要完成以下任务：
+1. 理解任务需求：从用户的自然语言描述中提取关键信息
+2. 选择合适工具：从可用工具集中选择最适合的工具
+3. 构造函数调用：正确填写函数名和参数
+4. 处理复杂场景：支持多函数调用、并行调用等高级场景
+BFCL 基准包含四个评估类别，难度递增。从最基础的单函数调用（Simple）开始，逐步增加到需要调用多
+个函数的场景（Multiple），再到需要并行调用多个函数的复杂场景（Parallel），最后是需要判断是否需要
+调用函数的场景（Irrelevance）。这四个类别覆盖了智能体在实际应用中可能遇到的各种工具调用场景，如
+表 12.1 所示：
+表 12.1 BFCL 基准中的四个评估类别
+│       │   └── ast_matcher.py          # AST匹配算法
+│       ├── gaia/                       # GAIA评估实现
+│       │   ├── dataset.py              # GAIA数据集加载器
+│       │   ├── evaluator.py            # GAIA评估器（准精确匹配）
+│       │   ├── metrics.py              # GAIA专用指标
+│       │   └── quasi_exact_match.py    # 准精确匹配算法
+│       └── data_generation/            # 数据生成评估实现
+│           ├── dataset.py              # AIME数据集加载器
+│           ├── llm_judge.py            # LLM Judge评估器
+│           └── win_rate.py             # Win Rate评估器
+└── tools/builtin/                      # 内置工具模块
+    ├── bfcl_evaluation_tool.py         # BFCL评估工具
+    ├── gaia_evaluation_tool.py         # GAIA评估工具
+    ├── llm_judge_tool.py               # LLM Judge工具
+    └── win_rate_tool.py                # Win Rate工具
+# 安装HelloAgents框架（第12章版本）
+pip install "hello-agents[evaluation]==0.2.7"
+# 设置环境变量
+export HF_TOKEN="your_huggingface_token"     # 用于GAIA数据集(后续也会有设置步骤)
+# 由于 `bfcl-eval` 官方包强制要求 numpy<=2.0.0, 和HelloAgents 主依赖版本存在冲突,因此需要单独
+安装
+pip install "numpy==1.26.4" bfcl-eval
+
+===== PDF PAGE 441 =====
+BFCL 的评估流程遵循标准的基准测试流程：首先加载数据集并选择评估类别，然后运行智能体获取预测结
+果，接着将预测结果解析为抽象语法树（AST），最后通过 AST 匹配算法判断预测是否正确。整个流程会遍
+历所有测试样本，最终计算出准确率等评估指标并生成评估报告。完整的评估流程如图 12.2 所示：
+图 12.2 BFCL 评估流程图
+（1）BFCL 数据集结构
+BFCL 数据集采用 JSON 格式，每个测试样本包含以下字段：
+关键字段说明：
+question : 用户的自然语言请求
+{
+  "id": "simple_001",
+  "question": "What's the weather like in Beijing today?",
+  "function": [
+    {
+      "name": "get_weather",
+      "description": "Get the current weather for a location",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "The city name"
+          }
+        },
+        "required": ["location"]
+      }
+    }
+  ],
+  "ground_truth": [
+    {
+      "name": "get_weather",
+      "arguments": {
+        "location": "Beijing"
+      }
+    }
+  ]
+}
+
+===== PDF PAGE 442 =====
+function : 可用的函数列表（包含函数签名和描述）
+ground_truth : 标准答案（期望的函数调用）
+（2）AST 匹配说明
+BFCL 使用AST 匹配（Abstract Syntax Tree Matching）作为核心评估算法，因此下文可以了解一下评估
+的策略。
+BFCL 使用抽象语法树（AST）进行智能匹配，而不是简单的字符串匹配。AST 匹配的核心思想是：将函数调
+用解析为语法树，然后比较树的结构和节点值。
+给定预测的函数调用 
+ 和标准答案 
+，AST 匹配函数定义为：
+其中 
+ 表示将函数调用解析为抽象语法树，
+ 表示语法树等价。
+两个语法树等价需要满足三个核心条件：函数名必须完全一致（精确匹配），参数键值对集合相等（忽略顺
+序），以及每个参数的值在语义上等价（例如 2+3  等价于 5 ）。在具体的匹配过程中，函数名匹配要求字
+符串精确匹配，例如 get_weather  和 get_temperature  被视为不同的函数。参数匹配则使用 AST 进行智
+能比较，允许参数顺序不同（f(a=1, b=2)  等价于 f(b=2, a=1) ），允许等价表达式（f(x=2+3)  等价于 
+f(x=5) ），也允许不同的字符串表示（f(s="hello")  等价于 f(s='hello') ）。对于多函数调用的场
+景，匹配算法要求调用相同数量的函数，每个函数调用都必须匹配，但调用顺序可以不同（使用集合匹
+配）。
+AST 匹配示例：
+（3）BFCL 评估指标
+BFCL 使用以下指标评估智能体性能：
+1. 准确率 (Accuracy)
+# 示例1：参数顺序不同（匹配成功）
+预测: get_weather(city="Beijing", unit="celsius")
+标准: get_weather(unit="celsius", city="Beijing")
+结果: ✅ 匹配成功
+# 示例2：等价表达式（匹配成功）
+预测: calculate(x=2+3)
+标准: calculate(x=5)
+结果: ✅ 匹配成功
+# 示例3：函数名错误（匹配失败）
+预测: get_temperature(city="Beijing")
+标准: get_weather(city="Beijing")
+结果: ❌ 匹配失败
+# 示例4：参数值错误（匹配失败）
+预测: get_weather(city="Shanghai")
+标准: get_weather(city="Beijing")
+结果: ❌ 匹配失败
+
+===== PDF PAGE 443 =====
+准确率是最核心的指标，定义为 AST 匹配成功的样本比例：
+其中：
+ 是总样本数
+ 是第  个样本的预测结果
+ 是第  个样本的标准答案
+ 是 AST 匹配函数
+2. AST 匹配率 (AST Match Rate)
+与准确率相同，强调使用 AST 匹配算法：
+3. 分类准确率 (Category-wise Accuracy)
+对于每个类别 
+，计算该类别的准确率：
+其中 
+ 是类别  的样本集合，
+ 是该类别的样本数。
+4. 加权准确率 (Weighted Accuracy)
+考虑不同类别的难度权重：
+其中 
+ 是类别  的权重，满足 
+。
+5. 错误率 (Error Rate)
+未能正确调用函数的样本比例：
+指标解释：
+Accuracy = 1.0：所有样本都完全正确
+Accuracy = 0.8：80%的样本正确，20%的样本错误
+Accuracy = 0.0：所有样本都错误
+分类准确率示例：
+
+===== PDF PAGE 444 =====
+（4）BFCL 官方评估工具
+BFCL 提供官方 CLI 工具进行评估：
+使用官方评估工具的优势在于：它使用官方的 AST 匹配算法，评估结果与排行榜完全一致，支持所有 BFCL 
+v4 类别，并且能够自动生成详细的评估报告。
+12.2.2 获取 BFCL 数据集
+ 
+BFCL 数据集可以通过以下方式获取：
+方法 1：从官方 GitHub 仓库克隆（推荐）
+这是最可靠的方式，可以获取完整的数据集和 ground truth：
+推荐这种方式的原因是：它包含完整的 ground truth（标准答案），数据格式与官方评估工具完全一致，可
+以直接使用官方评估脚本，并且支持 BFCL v4 最新版本。
+方法 2：使用 HelloAgents 加载官方数据
+克隆仓库后，使用 HelloAgents 加载数据：
+# 假设评估结果
+simple_accuracy = 0.95      # Simple类别：95%正确
+multiple_accuracy = 0.82    # Multiple类别：82%正确
+parallel_accuracy = 0.68    # Parallel类别：68%正确
+# 加权准确率（假设权重相等）
+weighted_accuracy = (0.95 + 0.82 + 0.68) / 3 = 0.817
+# 安装BFCL评估工具
+pip install bfcl
+# 运行官方评估
+bfcl evaluate \
+    --model-result-path ./results.json \
+    --test-category simple_python
+# 克隆BFCL仓库
+git clone https://github.com/ShishirPatil/gorilla.git temp_gorilla
+cd temp_gorilla/berkeley-function-call-leaderboard
+# 查看BFCL v4数据集
+ls bfcl_eval/data/
+# 输出: BFCL_v4_simple_python.json  BFCL_v4_multiple.json  BFCL_v4_parallel.json  ...
+# 查看ground truth
+ls bfcl_eval/data/possible_answer/
+# 输出: BFCL_v4_simple_python.json  BFCL_v4_multiple.json  ...
+from hello_agents.evaluation import BFCLDataset
+
+===== PDF PAGE 445 =====
+这个加载器的工作原理是：首先从bfcl_eval/data/ 加载测试数据，然后从
+bfcl_eval/data/possible_answer/ 加载 ground truth，接着自动合并测试数据和 ground truth，最后
+保留原始 BFCL 数据格式。其中 BFCL v4 数据集类别可以在表 12.2 查看。
+表 12.2 BFCL 基准中的四个评估类别
+当然也可以通过代码查看可用类别：
+12.2.3 在 HelloAgents 中实现 BFCL 评估
+ 
+现在让我们看看如何在 HelloAgents 框架中实现 BFCL 评估。我们提供了三种使用方式：
+方式 1：使用 BFCLEvaluationTool（推荐）
+这是最简单的方式，一行代码完成评估、报告生成和官方评估：
+# 加载BFCL官方数据
+dataset = BFCLDataset(
+    bfcl_data_dir="./temp_gorilla/berkeley-function-call-
+leaderboard/bfcl_eval/data",
+    category="simple_python"  # BFCL v4类别
+)
+# 加载数据（包括测试数据和ground truth）
+data = dataset.load()
+print(f"✅ 加载了 {len(data)} 个测试样本")
+print(f"✅ 加载了 {len(dataset.ground_truth)} 个ground truth")
+# 输出:
+# ✅ 加载了 400 个测试样本
+# ✅ 加载了 400 个ground truth
+# 获取所有支持的类别
+categories = dataset.get_available_categories()
+print(f"支持的类别: {categories}")
+# 输出: ['simple_python', 'simple_java', 'simple_javascript', 'multiple', ...]
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import BFCLEvaluationTool
+# 1. 创建要评估的智能体
+
+===== PDF PAGE 446 =====
+运行输出：
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name="TestAgent", llm=llm)
+# 2. 创建BFCL评估工具
+bfcl_tool = BFCLEvaluationTool()
+# 3. 运行评估（自动完成所有步骤）
+results = bfcl_tool.run(
+    agent=agent,
+    category="simple_python",  # 评估类别
+    max_samples=5              # 评估样本数（0表示全部）
+)
+# 4. 查看结果
+print(f"准确率: {results['overall_accuracy']:.2%}")
+print(f"正确数: {results['correct_samples']}/{results['total_samples']}")
+============================================================
+BFCL一键评估
+============================================================
+配置:
+   评估类别: simple_python
+   样本数量: 5
+   智能体: TestAgent
+============================================================
+步骤1: 运行HelloAgents评估
+============================================================
+✅ BFCL数据集加载完成
+   数据目录: ./temp_gorilla/berkeley-function-call-leaderboard/bfcl_eval/data
+   类别: simple_python
+   样本数: 400
+   Ground truth数: 400
+🔧 开始 BFCL 评估...
+   进度: 1/5
+   进度: 5/5
+✅ BFCL 评估完成
+   总体准确率: 100.00%
+   simple_python: 100.00% (5/5)
+📊 评估结果:
+   准确率: 100.00%
+   正确数: 5/5
+============================================================
+步骤2: 导出BFCL格式结果
+
+===== PDF PAGE 447 =====
+自动生成的 Markdown 报告：
+评估完成后，会自动生成一份详细的 Markdown 报告，包含：
+============================================================
+✅ BFCL格式结果已导出
+   输出文件: ./evaluation_results/bfcl_official/BFCL_v4_simple_python_result.json
+============================================================
+步骤3: 运行BFCL官方评估
+============================================================
+✅ 结果文件已复制到: ./result/Qwen_Qwen3-8B/BFCL_v4_simple_python_result.json
+🔄 运行命令: bfcl evaluate --model Qwen/Qwen3-8B --test-category simple_python --
+partial-eval
+============================================================
+BFCL官方评估结果
+============================================================
+📊 评估结果汇总:
+Model,Overall Acc,simple_python
+Qwen/Qwen3-8B,100.00,100.00
+🎯 最终结果:
+   准确率: 100.00%
+   正确数: 5/5
+============================================================
+步骤4: 生成评估报告
+============================================================
+📄 报告已生成: ./evaluation_reports/bfcl_report_20251011_005938.md
+准确率: 100.00%
+正确数: 5/5
+# BFCL评估报告
+**生成时间**: 2025-10-11 00:59:38
+## 📊 评估概览
+- **智能体**: TestAgent
+- **评估类别**: simple_python
+- **总体准确率**: 100.00%
+- **正确样本数**: 5/5
+## 📈 详细指标
+### 分类准确率
+- **simple_python**: 100.00% (5/5)
+## 📝 样本详情
+
+===== PDF PAGE 448 =====
+方式 2：使用一键评估脚本
+适合命令行快速评估，在这一章配套的代码案例里，我们提供了04_run_bfcl_evaluation.py ，支持直接
+命令行调用测评：
+脚本支持三个参数：--category 指定评估类别（默认 simple_python），--samples 指定评估样本数（默
+认 5，0 表示全部），--model-name 指定模型名称用于 BFCL 官方评估（默认 Qwen/Qwen3-8B）。
+方式 3：直接使用 Dataset 和 Evaluator
+适合需要自定义评估流程的场景：
+| 样本ID | 问题 | 预测结果 | 正确答案 | 是否正确 |
+|--------|------|----------|----------|----------|
+| simple_python_0 | Find the area of a triangle... | [{'name': 
+'calculate_triangle_area'...}] | [{'function_name': {'base': [10]...}}] | ✅ |
+| simple_python_1 | Calculate the factorial of 5... | [{'name': 
+'calculate_factorial'...}] | [{'function_name': {'number': [5]}}] | ✅ |
+...
+## 📊 准确率可视化
+准确率: ██████████████████████████████████████████████████ 100.00%
+## 💡 建议
+- ✅ 表现优秀！智能体在工具调用方面表现出色。
+# 运行评估脚本
+python chapter12/04_run_bfcl_evaluation.py --category simple_python --samples 10
+# 指定模型名称（用于BFCL官方评估）
+python examples/04_run_bfcl_evaluation.py \
+    --category simple_python \
+    --samples 10 \
+    --model-name "Qwen/Qwen3-8B"
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.evaluation import BFCLDataset, BFCLEvaluator
+# 1. 创建智能体
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name="TestAgent", llm=llm)
+# 2. 加载数据集
+dataset = BFCLDataset(
+    bfcl_data_dir="./temp_gorilla/berkeley-function-call-
+leaderboard/bfcl_eval/data",
+    category="simple_python"
+)
+data = dataset.load()
+
+===== PDF PAGE 449 =====
+通过以上三种方式，我们可以根据不同的需求选择合适的评估方法。如果只是想快速了解智能体的表现，使
+用 BFCLEvaluationTool 的一键评估最为便捷；如果需要批量评估或集成到 CI/CD 流程，使用命令行脚本更
+加合适；如果需要深度定制评估流程或集成到自己的系统中，直接使用 Dataset 和 Evaluator 提供了最大的
+灵活性。
+ 
+12.2.4 BFCL 官方评估工具集成
+ 
+前面我们学习了如何使用 HelloAgents 内置的评估功能。实际上，BFCLEvaluationTool 已经自动集成了 
+BFCL 官方评估工具，让你能够获得权威的、可对比的评估结果。
+整个评估流程包括四个步骤：首先从 BFCL v4 数据集加载测试数据，然后使用 HelloAgents 运行评估获取智
+能体的预测结果，接着将结果导出为 BFCL 官方格式（JSONL），最后使用官方评估脚本计算最终分数。这
+个流程确保了评估结果与 BFCL 排行榜完全一致，如图 12.3 所示：
+图 12.3 Helloagents 载入 BFCL 评估过程
+使用BFCLEvaluationTool 时，官方评估会自动运行（默认启用）：
+# 3. 创建评估器
+evaluator = BFCLEvaluator(
+    dataset=dataset,
+    category="simple_python",
+    evaluation_mode="ast"  # 使用AST匹配模式
+)
+# 4. 运行评估
+results = evaluator.evaluate(agent, max_samples=10)
+# 5. 查看结果
+print(f"准确率: {results['overall_accuracy']:.2%}")
+print(f"正确数: {results['correct_samples']}/{results['total_samples']}")
+# 6. 导出BFCL格式结果（可选）
+evaluator.export_to_bfcl_format(
+    results,
+    output_path="./evaluation_results/my_results.json"
+)
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import BFCLEvaluationTool
+# 创建智能体
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name="TestAgent", llm=llm)
+# 创建评估工具
+
+===== PDF PAGE 450 =====
+工具会自动执行完整的评估流程：首先运行 HelloAgents 评估获取预测结果，然后将结果导出为 BFCL 格式
+并保存到evaluation_results/bfcl_official/ 目录，接着复制结果文件到result/{model_name}/ 目
+录以符合官方评估工具的要求，随后运行 BFCL 官方评估命令计算分数，最后显示官方评估结果并生成 
+Markdown 格式的评估报告。
+官方评估输出示例：
+如果你想手动控制评估流程，可以禁用自动官方评估：
+bfcl_tool = BFCLEvaluationTool()
+# 运行评估（自动运行官方评估）
+results = bfcl_tool.run(
+    agent=agent,
+    category="simple_python",
+    max_samples=5,
+    # run_official_eval=True  # 默认为True，可以省略
+    model_name="Qwen/Qwen3-8B"  # 可选，指定模型名称
+)
+============================================================
+步骤3: 运行BFCL官方评估
+============================================================
+✅ 结果文件已复制到:
+   ./result/Qwen_Qwen3-8B/BFCL_v4_simple_python_result.json
+🔄 运行命令: bfcl evaluate --model Qwen/Qwen3-8B --test-category simple_python --
+partial-eval
+============================================================
+BFCL官方评估结果
+============================================================
+📊 评估结果汇总:
+Model,Overall Acc,simple_python
+Qwen/Qwen3-8B,100.00,100.00
+🎯 最终结果:
+   准确率: 100.00%
+   正确数: 5/5
+# 禁用官方评估
+results = bfcl_tool.run(
+    agent=agent,
+    category="simple_python",
+    max_samples=5,
+    run_official_eval=False  # 禁用官方评估
+)
+# 然后手动运行官方评估
+
+===== PDF PAGE 451 =====
+你也可以手动生成报告：
+ 
+12.2.5 核心组件实现细节
+ 
+在前面的小节中，我们学习了如何使用 BFCL 评估工具。现在让我们深入了解 HelloAgents 评估系统的核心
+组件是如何实现的。理解这些实现细节不仅能帮助你更好地使用评估系统，还能让你根据自己的需求进行定
+制和扩展。
+（1）BFCLDataset：数据集加载器
+BFCLDataset 负责加载和管理 BFCL 数据集：
+import subprocess
+subprocess.run([
+    "bfcl", "evaluate",
+    "--model", "Qwen/Qwen3-8B",
+    "--test-category", "simple_python",
+    "--partial-eval"
+])
+# 运行评估
+results = bfcl_tool.run(agent, category="simple_python", max_samples=5)
+# 手动生成报告
+report = bfcl_tool.generate_report(
+    results,
+    output_file="./my_reports/custom_report.md"
+)
+# 打印报告内容
+print(report)
+class BFCLDataset:
+    """BFCL数据集加载器"""
+    def __init__(self, category: str = "simple", local_data_path: Optional[str] = 
+None):
+        self.category = category
+        self.local_data_path = local_data_path
+        self.data = []
+    def load(self) -> List[Dict[str, Any]]:
+        """加载数据集"""
+        # 优先从本地加载
+        if self.local_data_path:
+            return self._load_from_local()
+        # 否则从Hugging Face加载
+        return self._load_from_huggingface()
+
+===== PDF PAGE 452 =====
+因为 BFCL 的数据集就在官方的仓库内，所以这里建议的方式是直接在本地 clone 一份进行测评。当找不到
+时才到 huggingface 进行加载。
+（2）BFCLEvaluator：评估执行器
+BFCLEvaluator 负责执行评估流程。它的核心是evaluate() 方法，该方法协调整个评估过程：
+这个评估器的设计包含三个核心要点：首先是提示词构造，需要将数据集中的问题和函数定义转换为智能体
+可理解的提示词；其次是函数调用提取，需要从智能体的响应中提取函数调用，并支持多种格式（JSON、代
+码块等）；最后是 AST 匹配，使用抽象语法树进行函数调用对比，这比简单的字符串匹配更准确。
+让我们看看函数调用提取的实现：
+class BFCLEvaluator:
+    """BFCL评估器"""
+    def evaluate(self, agent: Any, max_samples: Optional[int] = None) -> Dict[str, 
+Any]:
+        """执行评估"""
+        results = []
+        for item in self.dataset[:max_samples]:
+            # 1. 构造提示词
+            prompt = self._build_prompt(item)
+            # 2. 调用智能体
+            response = agent.run(prompt)
+            # 3. 提取函数调用
+            predicted_calls = self._extract_function_calls(response)
+            # 4. 与标准答案对比
+            is_correct = self._compare_calls(predicted_calls, item["ground_truth"])
+            results.append({
+                "id": item["id"],
+                "prediction": predicted_calls,
+                "ground_truth": item["ground_truth"],
+                "is_correct": is_correct
+            })
+        return {"results": results, "total_samples": len(results)}
+def _extract_function_calls(self, response: str) -> List[Dict[str, Any]]:
+    """从响应中提取函数调用
+    支持多种格式：
+    1. JSON格式：{"name": "func", "arguments": {...}}
+    2. 代码块格式：```python\nfunc(arg1=val1)\n```
+    3. 纯文本格式：func(arg1=val1)
+    """
+    calls = []
+
+===== PDF PAGE 453 =====
+（3）BFCLMetrics：指标计算器
+BFCLMetrics 负责计算各种评估指标：
+AST 匹配的实现：
+AST 匹配是 BFCL 评估的核心技术。它比简单的字符串匹配更智能，能够识别语义等价的函数调用：
+    # 尝试JSON解析
+    try:
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group())
+            if isinstance(data, dict) and "name" in data:
+                calls.append(data)
+            elif isinstance(data, list):
+                calls.extend(data)
+    except json.JSONDecodeError:
+        pass
+    # 尝试代码块提取
+    code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', response, re.DOTALL)
+    for code in code_blocks:
+        # 解析Python函数调用
+        parsed_calls = self._parse_python_calls(code)
+        calls.extend(parsed_calls)
+    return calls
+class BFCLMetrics:
+    """BFCL指标计算器"""
+    def compute_metrics(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """计算所有指标"""
+        return {
+            "accuracy": self._compute_accuracy(results),
+            "ast_match_rate": self._compute_ast_match_rate(results),
+            "parameter_accuracy": self._compute_parameter_accuracy(results),
+            "f1_score": self._compute_f1_score(results),
+            "category_statistics": self._compute_category_stats(results)
+        }
+def _ast_match(self, pred_call: Dict, true_call: Dict) -> bool:
+    """使用AST匹配函数调用
+    AST匹配的优势：
+    1. 忽略参数顺序：func(a=1, b=2) 等价于 func(b=2, a=1)
+    2. 识别等价表达式：2+3 等价于 5
+    3. 忽略空格和格式差异
+    """
+    # 1. 函数名必须完全匹配
+
+===== PDF PAGE 454 =====
+（4）工具化封装：BFCLEvaluationTool
+最后，我们将这些组件封装成一个 Tool，让它可以被智能体直接调用：
+    if pred_call.get("name") != true_call.get("name"):
+        return False
+    # 2. 将参数转换为AST节点
+    pred_args = self._args_to_ast(pred_call.get("arguments", {}))
+    true_args = self._args_to_ast(true_call.get("arguments", {}))
+    # 3. 比较AST节点
+    return ast.dump(pred_args) == ast.dump(true_args)
+def _args_to_ast(self, args: Dict[str, Any]) -> ast.AST:
+    """将参数字典转换为AST节点"""
+    # 构造一个虚拟的函数调用
+    code = f"func({', '.join(f'{k}={repr(v)}' for k, v in args.items())})"
+    tree = ast.parse(code)
+    return tree.body[0].value  # 返回Call节点
+class BFCLEvaluationTool(Tool):
+    """BFCL评估工具"""
+    def __init__(self, local_data_path: Optional[str] = None):
+        super().__init__(
+            name="bfcl_evaluation",
+            description="评估智能体的工具调用能力"
+        )
+        self.dataset = None
+        self.evaluator = None
+        self.metrics_calculator = BFCLMetrics()
+    def run(self, parameters: Dict[str, Any]) -> str:
+        """执行评估"""
+        # 1. 加载数据集
+        self.dataset = BFCLDataset(...)
+        # 2. 创建评估器
+        self.evaluator = BFCLEvaluator(...)
+        # 3. 运行评估
+        results = self.evaluator.evaluate(...)
+        # 4. 计算指标
+        metrics = self.metrics_calculator.compute_metrics(...)
+        # 5. 返回JSON结果
+        return json.dumps(results, ensure_ascii=False)
+
+===== PDF PAGE 455 =====
+这个工具的设计遵循三个核心原则：首先继承 Tool 基类以遵循 HelloAgents 的工具规范，确保与框架的无
+缝集成；其次进行严格的参数验证，检查必需参数并提供友好的错误提示，提升用户体验；最后对结果进行
+格式化，返回 JSON 字符串以便于解析和展示。通过这种模块化的设计，我们实现了一个既易用又灵活的评
+估系统，用户可以直接使用高层的 Tool 接口快速完成评估，也可以深入到底层组件进行定制以满足特殊需
+求。
+12.2.6 扩展与优化建议
+ 
+通过前面的学习，我们已经掌握了如何使用 HelloAgents 进行 BFCL 评估。需要注意的是，我们目前的实现
+是基于 SimpleAgent 的简单复现，主要完成了 BFCL 评估的基础功能。在实际应用中，BFCL 基准包含多个
+难度级别和场景，要在排行榜上获得更高的分数，还需要进一步的优化和扩展。
+（1）当前实现的局限性
+我们当前的 SimpleAgent 实现主要聚焦于评估流程的搭建，在工具调用能力上还有提升空间。SimpleAgent 
+使用自定义的工具调用格式[TOOL_CALL:tool_name:parameters] ，这种格式需要 LLM 主动学习和使用，
+在复杂场景下的表现可能不如使用原生函数调用（Function Calling）的智能体。此外，我们目前只测试了 
+simple_python 等基础类别，对于 multiple、parallel、irrelevance 等更复杂的场景，还需要针对性的优
+化。
+（2）提升 BFCL 分数的方向
+要进一步提升 BFCL 评估分数，可以从以下几个方向入手。首先是优化智能体的工具调用能力，可以考虑使
+用支持原生函数调用的 LLM（如 GPT-4、Claude 等），或者改进提示词让 LLM 更好地理解工具调用格式。
+其次是扩展工具库，BFCL 测试中涉及各种类型的函数，可以根据测试数据集的特点，预先实现常用的工具
+类型，提高智能体的工具覆盖率。第三是针对不同难度级别设计不同的策略，例如在 multiple 场景下需要智
+能体能够规划多步骤的工具调用序列，在 parallel 场景下需要识别可以并行执行的工具调用，在 irrelevance 
+场景下需要判断是否真的需要调用工具。
+（3）实践建议
+对于想要在 BFCL 上取得更好成绩的开发者，建议采用以下实践策略。首先，从 simple 类别开始，确保基础
+的单函数调用能够稳定工作，这是后续优化的基础。然后，逐步测试 multiple、parallel 等更复杂的类别，
+分析失败案例，找出智能体的薄弱环节。在优化过程中，可以参考 BFCL 排行榜上的高分模型，学习它们的
+设计思路和优化技巧。同时，建议使用官方评估工具进行验证，确保优化后的结果与排行榜标准一致。
+这里总结一些评估时可以进一步处理的建议：
+1. 渐进式评估
+从小样本开始，逐步增加样本数：
+# 第一步：快速测试（5个样本）
+results_quick = bfcl_tool.run(agent, category="simple_python", max_samples=5)
+# 第二步：中等规模测试（50个样本）
+if results_quick['overall_accuracy'] > 0.8:
+    results_medium = bfcl_tool.run(agent, category="simple_python", max_samples=50)
+# 第三步：完整评估（全部样本）
+if results_medium['overall_accuracy'] > 0.8:
+    results_full = bfcl_tool.run(agent, category="simple_python", max_samples=0)
+
+===== PDF PAGE 456 =====
+2. 多类别评估
+评估不同难度的任务：
+3. 对比评估
+对比不同配置的智能体：
+如果你的评估结果很好，可以考虑提交到 BFCL 官方排行榜！
+步骤 1：准备提交材料
+1. 模型描述文档
+2. 评估结果文件（所有类别）
+3. 模型访问方式（API 或开源链接）
+步骤 2：提交到 GitHub
+访问 BFCL 官方仓库，按照说明提交 Pull Request：
+仓库地址：https://github.com/ShishirPatil/gorilla
+提交指南：参考CONTRIBUTING.md
+步骤 3：等待审核
+BFCL 团队会审核你的提交，验证结果的准确性。审核通过后，你的模型将出现在官方排行榜上！
+ 
+12.3 GAIA：通用 AI 助手能力评估
+ 
+categories = ["simple_python", "multiple", "parallel", "irrelevance"]
+for category in categories:
+    print(f"\n评估类别: {category}")
+    results = bfcl_tool.run(agent, category=category, max_samples=10)
+    print(f"准确率: {results['overall_accuracy']:.2%}")
+# 配置1：默认提示词
+agent1 = SimpleAgent(name="Agent-Default", llm=llm)
+results1 = bfcl_tool.run(agent1, category="simple_python", max_samples=10)
+# 配置2：优化提示词
+agent2 = SimpleAgent(name="Agent-Optimized", llm=llm)
+# ... 设置优化的系统提示词 ...
+results2 = bfcl_tool.run(agent2, category="simple_python", max_samples=10)
+# 对比结果
+print(f"默认配置准确率: {results1['overall_accuracy']:.2%}")
+print(f"优化配置准确率: {results2['overall_accuracy']:.2%}")
+
+===== PDF PAGE 457 =====
+12.3.1 GAIA 基准介绍
+ 
+GAIA (General AI Assistants) 是由 Meta AI 和 Hugging Face 联合推出的评估基准，专注于评估 AI 助手的通
+用能力[2]。与 BFCL 专注于工具调用不同，GAIA 评估的是智能体在真实世界任务中的综合表现。
+GAIA 的设计理念是：真实世界的问题往往需要多种能力的综合运用。一个优秀的 AI 助手不仅需要调用工
+具，还需要：
+多步推理：将复杂问题分解为多个子问题
+知识运用：利用内置知识和外部知识库
+多模态理解：处理文本、图片、文件等多种输入
+网页浏览：从互联网获取最新信息
+文件操作：读取和处理各种格式的文件
+（1）GAIA 数据集结构
+了解 GAIA 的评估理念后，让我们深入了解 GAIA 数据集的具体结构。GAIA 包含 466 个精心设计的真实世界
+问题，这些问题按照复杂度和所需推理步骤分为三个难度级别，从简单的零步推理任务到需要多步复杂推理
+的困难任务，全面覆盖了智能体在实际应用中可能遇到的各种场景，如表 12.3 所示：
+表 12.3 GAIA 数据集难度级别分布
+关于 GAIA 数据集的样本示例可以参考下面的代码片段：
+关键字段说明：
+{
+  "task_id": "gaia_001",
+  "Question": "What is the total population of the top 3 most populous cities in 
+California?",
+  "Level": 2,
+  "Final answer": "12847521",
+  "file_name": "",
+  "file_path": "",
+  "Annotator Metadata": {
+    "Steps": [
+      "Search for most populous cities in California",
+      "Get population data for top 3 cities",
+      "Sum the populations"
+    ],
+    "Number of steps": 3,
+    "How long did this take?": "5 minutes",
+    "Tools": ["web_search", "calculator"]
+  }
+}
+
+===== PDF PAGE 458 =====
+Question : 问题描述
+Level : 难度级别（1-3）
+Final answer : 标准答案（可能是数字、文本或文件）
+file_name/file_path : 附件文件（如果有）
+Annotator Metadata : 标注者提供的元数据（推理步骤、所需工具等）
+（2）准精确匹配介绍
+GAIA 使用准精确匹配（Quasi Exact Match）评估算法，这是 GAIA 官方定义的评估标准。该算法的核心
+思想是：先对答案进行归一化处理，然后进行精确匹配。
+给定预测答案 
+ 和标准答案 
+，准精确匹配函数定义为：
+其中 
+ 是归一化函数，根据答案类型应用不同的规则。
+归一化函数根据答案类型应用不同的规则。对于数字类型，需要移除逗号分隔符（1,000  → 1000 ）和单位
+符号（$100  → 100 ，50%  → 50 ），例如"$1,234.56" 归一化为"1234.56" 。对于字符串类型，需要转
+换为小写（"Apple"  → "apple" ）、移除冠词（"the apple"  → "apple" ）、移除多余空格（"hello  
+world"  → "hello world" ）和移除末尾标点（"hello."  → "hello" ），例如"The United 
+States" 归一化为"united states" 。对于列表类型，需要按逗号分隔元素，对每个元素应用字符串归一
+化，按字母顺序排序后重新连接，例如"Paris, London, Berlin" 归一化为"berlin,london,paris" 。
+归一化示例：
+（3）GAIA 评估指标
+GAIA 使用以下指标评估智能体性能：
+1. 精确匹配率 (Exact Match Rate)
+精确匹配率是 GAIA 的核心指标，定义为准精确匹配成功的样本比例：
+其中：
+# 数字答案
+原始答案: "$1,234.56"
+归一化后: "1234.56"
+# 字符串答案
+原始答案: "The United States of America"
+归一化后: "united states of america"
+# 列表答案
+原始答案: "Paris, London, Berlin"
+归一化后: "berlin, london, paris"
+
+===== PDF PAGE 459 =====
+ 是总样本数
+ 是第  个样本的预测答案
+ 是第  个样本的标准答案
+ 是准精确匹配函数
+2. 分级准确率 (Level-wise Accuracy)
+对于每个难度级别 
+，计算该级别的准确率：
+其中 
+ 是难度级别  的样本集合，
+ 是该级别的样本数。
+3. 难度递进下降率 (Difficulty Progression Drop Rate)
+衡量智能体在难度增加时的性能衰减：
+：从 Level 1 到 Level 2 的下降率
+：从 Level 2 到 Level 3 的下降率
+4. 平均推理步骤数 (Average Reasoning Steps)
+评估智能体完成任务所需的平均步骤数：
+其中 
+ 是正确回答的样本数，
+ 是第  个样本的推理步骤数。
+指标解释：
+Exact Match Rate = 1.0：所有样本都完全正确
+Exact Match Rate = 0.5：50%的样本正确，50%的样本错误
+Drop Rate = 0.3：难度增加导致准确率下降 30%
+Drop Rate = 0.0：难度增加不影响准确率（理想情况）
+评估示例：
+假设我们评估了 10 个样本，结果可以参考表 12.4 所示：
+表 12.4 GAIA 数据集难度级别分布
+
+===== PDF PAGE 460 =====
+如果要计算这个案例的指标的话，可以参考下面的 Python 脚本。
+结果分析：
+整体表现：70%的精确匹配率，表现良好
+难度敏感性：从 Level 1 到 Level 2 下降 33%，说明智能体在中等难度任务上有明显衰减
+能力边界：Level 3 准确率为 50%，说明智能体在复杂任务上仍有提升空间
+下降率越大，说明智能体在处理复杂任务时的能力衰减越明显。
+（4）GAIA 官方系统提示词
+GAIA 要求使用特定的系统提示词，确保模型输出符合评估格式：
+# 1. 精确匹配率
+total_samples = 10
+correct_samples = 7  # 样本1,2,3,5,6,8,9
+exact_match_rate = correct_samples / total_samples = 0.70  # 70%
+# 2. 分级准确率
+level_1_correct = 3  # 样本1,2,3
+level_1_total = 3
+level_1_accuracy = 3 / 3 = 1.00  # 100%
+level_2_correct = 2  # 样本5,6
+level_2_total = 3
+level_2_accuracy = 2 / 3 = 0.67  # 67%
+level_3_correct = 2  # 样本8,9
+level_3_total = 4
+level_3_accuracy = 2 / 4 = 0.50  # 50%
+# 3. 难度递进下降率
+drop_rate_1_to_2 = (1.00 - 0.67) / 1.00 = 0.33  # 33%
+drop_rate_2_to_3 = (0.67 - 0.50) / 0.67 = 0.25  # 25%
+print(f"精确匹配率: {exact_match_rate:.2%}")  # 70.00%
+print(f"Level 1准确率: {level_1_accuracy:.2%}")  # 100.00%
+print(f"Level 2准确率: {level_2_accuracy:.2%}")  # 66.67%
+print(f"Level 3准确率: {level_3_accuracy:.2%}")  # 50.00%
+print(f"Level 1→2 下降率: {drop_rate_1_to_2:.2%}")  # 33.00%
+print(f"Level 2→3 下降率: {drop_rate_2_to_3:.2%}")  # 25.00%
+
+===== PDF PAGE 461 =====
+GAIA 对答案格式有严格的要求：答案必须以FINAL ANSWER: [答案] 的格式给出；对于数字类型的答案，不
+使用逗号分隔符和单位符号；对于字符串类型的答案，不使用冠词和缩写；对于列表类型的答案，使用逗号
+分隔并按字母顺序排列。
+12.3.2 获取 GAIA 数据集
+ 
+重要提示：GAIA 是受限数据集（Gated Dataset），需要先在 HuggingFace 上申请访问权限。
+步骤 1：申请访问权限
+1. 访问 https://huggingface.co/datasets/gaia-benchmark/GAIA
+2. 点击"Request access"按钮
+3. 填写申请表单（通常会在几秒内批准）
+4. 获取你的 HuggingFace Token：https://huggingface.co/settings/tokens
+步骤 2：配置环境变量
+在.env 文件中添加你的 HuggingFace Token：
+方法 1：使用 HelloAgents 自动下载（推荐）
+HelloAgents 会自动处理 GAIA 数据集的下载和缓存：
+GAIA_SYSTEM_PROMPT = """You are a general AI assistant. I will ask you a question. 
+Report your thoughts, and finish your answer with the following template: FINAL 
+ANSWER: [YOUR FINAL ANSWER].
+YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma 
+separated list of numbers and/or strings.
+If you are asked for a number, don't use comma to write your number neither use 
+units such as $ or percent sign unless specified otherwise.
+If you are asked for a string, don't use articles, neither abbreviations (e.g. for 
+cities), and write the digits in plain text unless specified otherwise.
+If you are asked for a comma separated list, apply the above rules depending of 
+whether the element to be put in the list is a number or a string."""
+# HuggingFace API 配置
+HF_TOKEN=hf_your_token_here
+from hello_agents.evaluation import GAIADataset
+import os
+# 确保设置了HF_TOKEN，如果设置了.env无需这一行
+os.environ["HF_TOKEN"] = "hf_your_token_here"
+# 自动下载到 ./data/gaia/
+dataset = GAIADataset(
+
+===== PDF PAGE 462 =====
+工作原理：
+首次运行时，使用snapshot_download 下载整个数据集到./data/gaia/
+数据集包含 114 个文件（问题、图片、PDF 等材料）
+后续使用直接从本地加载，速度很快
+数据集目录结构：
+方法 2：手动下载
+如果你想手动下载数据集：
+查看数据集统计：
+    dataset_name="gaia-benchmark/GAIA",
+    split="validation",  # 或 "test"
+    level=1  # 可选: 1, 2, 3, None(全部)
+)
+items = dataset.load()
+print(f"加载了 {len(items)} 个测试样本")
+# 输出: 加载了 53 个测试样本 (Level 1)
+./data/gaia/
+├── 2023/
+│   ├── validation/
+│   │   ├── metadata.jsonl  (165个问题)
+│   │   ├── *.png, *.pdf, *.csv, *.xlsx  (附件文件)
+│   └── test/
+│       ├── metadata.jsonl  (301个问题)
+│       └── ... (附件文件)
+├── GAIA.py
+└── README.md
+from huggingface_hub import snapshot_download
+import os
+# 设置Token
+os.environ["HF_TOKEN"] = "hf_your_token_here"
+# 下载数据集
+snapshot_download(
+    repo_id="gaia-benchmark/GAIA",
+    repo_type="dataset",
+    local_dir="./data/gaia",
+    token=os.getenv("HF_TOKEN")
+)
+
+===== PDF PAGE 463 =====
+12.3.3 在 HelloAgents 中实现 GAIA 评估
+ 
+与 BFCL 类似，我们提供两种评估方式，推荐使用方式 1。
+方式 1：使用 GAIAEvaluationTool 一键评估
+这是最简单的方式，自动完成数据集下载、评估执行、结果导出和报告生成：
+# 查看数据集统计
+stats = dataset.get_statistics()
+print(f"总样本数: {stats['total_samples']}")
+print(f"级别分布: {stats['level_distribution']}")
+# 输出:
+# 总样本数: 165
+# 级别分布: {1: 53, 2: 62, 3: 50}
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import GAIAEvaluationTool
+# GAIA官方系统提示词（来自论文）
+GAIA_SYSTEM_PROMPT = """You are a general AI assistant. I will ask you a question. 
+Report your thoughts, and finish your answer with the following template: FINAL 
+ANSWER: [YOUR FINAL ANSWER].
+YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma 
+separated list of numbers and/or strings.
+If you are asked for a number, don't use comma to write your number neither use 
+units such as $ or percent sign unless specified otherwise.
+If you are asked for a string, don't use articles, neither abbreviations (e.g. for 
+cities), and write the digits in plain text unless specified otherwise.
+If you are asked for a comma separated list, apply the above rules depending of 
+whether the element to be put in the list is a number or a string."""
+# 1. 创建智能体（使用GAIA官方系统提示词）
+llm = HelloAgentsLLM()
+agent = SimpleAgent(
+    name="TestAgent",
+    llm=llm,
+    system_prompt=GAIA_SYSTEM_PROMPT  # 关键：使用GAIA官方提示词
+)
+# 2. 创建GAIA评估工具
+gaia_tool = GAIAEvaluationTool()
+# 3. 一键运行评估
+results = gaia_tool.run(
+    agent=agent,
+    level=1,  # Level 1: 简单任务

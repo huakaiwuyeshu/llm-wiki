@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness · 企业落地的安全底座（六子系统）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15191E; --slate-700:#3a4654; --slate-500:#697686; --slate-300:#c3cbd5;
+    --line:#e6e3dc; --paper:#FBFAF7; --paper-elev:#FFFFFF;
+    --accent:#2546E0; --accent-soft:#eef1fe;
+    --pain:#B23A2E; --pain-soft:#fbf0ee;
+    --design:#2C7A52; --design-soft:#eef6f0;
+    --amber:#B9821E; --amber-soft:#fbf2e0;
+    /* group colors */
+    --g-stable:#2546E0; --g-stable-soft:#eef1fe;   /* 不崩 · 可靠 */
+    --g-safe:#B23A2E;   --g-safe-soft:#fbf0ee;      /* 不闯祸 · 安全 */
+    --g-clear:#2C7A52;  --g-clear-soft:#eef6f0;     /* 看得见 · 可控 */
+    --bg:var(--paper); --surface:var(--paper-elev); --text:var(--ink);
+    --text-2:var(--slate-700); --text-3:var(--slate-500); --border:var(--line);
+    --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px;
+    --radius:14px; --maxw:1080px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;padding:var(--s5) var(--s3);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;}
+  .serif{font-family:"Lora","PingFang SC","Microsoft YaHei",serif;}
+
+  .masthead{border-bottom:2px solid var(--ink);padding-bottom:var(--s3);margin-bottom:var(--s4);}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:var(--s2);}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;}
+  .deck{margin-top:var(--s2);font-size:16px;color:var(--text-2);max-width:66ch;}
+  .crumb{display:inline-block;margin-top:var(--s2);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:999px;}
+
+  .thesis{background:var(--ink);color:#f5f3ee;border-radius:var(--radius);padding:var(--s4);margin-bottom:var(--s5);}
+  .thesis .tag{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9fb0ff;font-weight:700;margin-bottom:var(--s2);}
+  .thesis p{font-size:clamp(17px,2.4vw,22px);line-height:1.55;font-weight:500;}
+  .thesis p + p{margin-top:14px;font-size:15px;color:#cfd4dc;font-weight:400;}
+  .thesis b{color:#fff;font-weight:700;box-shadow:inset 0 -.5em 0 rgba(37,70,224,.4);}
+
+  .seclabel{display:flex;align-items:baseline;gap:var(--s2);margin:var(--s5) 0 var(--s3);}
+  .seclabel .n{font-family:"Lora",serif;font-size:14px;color:var(--accent);font-weight:700;}
+  .seclabel h2{font-size:22px;font-weight:700;letter-spacing:-.01em;}
+  .seclabel .hint{font-size:13px;color:var(--text-3);margin-left:auto;font-weight:500;}
+
+  /* ===== 包裹示意:Harness 包在 Agent 外层 ===== */
+  .wrapviz{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--s4);text-align:center;}
+  .shell{border:2px dashed var(--g-safe);border-radius:18px;padding:var(--s4) var(--s3);position:relative;background:var(--g-safe-soft);}
+  .shell .stag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--g-safe);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;padding:3px 14px;border-radius:999px;}
+  .core{background:var(--ink);color:#f5f3ee;border-radius:12px;padding:var(--s3) var(--s4);display:inline-block;}
+  .core b{font-size:17px;font-weight:700;display:block;}
+  .core span{font-size:13px;color:#cfd4dc;}
+  .wrapviz .note{margin-top:var(--s3);font-size:13.5px;color:var(--text-2);line-height:1.6;max-width:64ch;margin-left:auto;margin-right:auto;}
+  .wrapviz .note b{color:var(--g-safe);}
+
+  /* ===== 三组归类条 ===== */
+  .groups{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);margin-bottom:var(--s3);}
+  .grp{border-radius:12px;padding:14px var(--s3);border:1px solid var(--border);border-left:5px solid;background:var(--surface);}
+  .grp.stable{border-left-color:var(--g-stable);} .grp.safe{border-left-color:var(--g-safe);} .grp.clear{border-left-color:var(--g-clear);}
+  .grp .gq{font-size:12px;font-weight:700;letter-spacing:.04em;margin-bottom:3px;}
+  .grp.stable .gq{color:var(--g-stable);} .grp.safe .gq{color:var(--g-safe);} .grp.clear .gq{color:var(--g-clear);}
+  .grp .gt{font-size:17px;font-weight:800;}
+  .grp .gd{font-size:12.5px;color:var(--text-3);margin-top:2px;}
+
+  /* ===== 六子系统卡 ===== */
+  .grid6{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);}
+  .sub{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 2px rgba(20,25,30,.04);border-top:4px solid;}
+  .sub.stable{border-top-color:var(--g-stable);} .sub.safe{border-top-color:var(--g-safe);} .sub.clear{border-top-color:var(--g-clear);}
+  .sub-head{padding:16px var(--s3) 12px;border-bottom:1px solid var(--border);}
+  .sub-head .top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .sub-head .num{font-family:"Lora",serif;font-weight:700;font-size:15px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+  .sub.stable .num{background:var(--g-stable);} .sub.safe .num{background:var(--g-safe);} .sub.clear .num{background:var(--g-clear);}
+  .sub-head .name{font-size:17px;font-weight:700;}
+  .sub-head .en{font-size:12px;color:var(--text-3);font-weight:500;}
+  .gtag{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:3px 9px;border-radius:999px;margin-left:auto;}
+  .gtag.stable{background:var(--g-stable-soft);color:var(--g-stable);}
+  .gtag.safe{background:var(--g-safe-soft);color:var(--g-safe);}
+  .gtag.clear{background:var(--g-clear-soft);color:var(--g-clear);}
+
+  .risk{padding:12px var(--s3);background:var(--pain-soft);border-bottom:1px solid var(--border);}
+  .risk .rl{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--pain);margin-bottom:4px;}
+  .risk .rl::before{content:"⚠";font-size:12px;}
+  .risk .rt{font-size:13.5px;color:var(--text);line-height:1.55;font-weight:500;}
+
+  .does{padding:12px var(--s3) 14px;}
+  .does .dl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--design);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .does .dl::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--design);display:inline-block;}
+  .does ul{list-style:none;}
+  .does li{font-size:13px;color:var(--text-2);line-height:1.55;padding-left:16px;position:relative;margin-bottom:4px;}
+  .does li::before{content:"›";position:absolute;left:2px;color:var(--slate-300);font-weight:700;}
+
+  .map{margin:0 var(--s3) 14px;padding:9px 12px;background:var(--accent-soft);border-radius:8px;font-size:12px;color:var(--accent);font-weight:600;line-height:1.5;}
+  .map b{font-weight:800;}
+
+  /* ===== 检查清单 ===== */
+  .checklist{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--s4);}
+  .checklist .row{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--border);align-items:flex-start;}
+  .checklist .row:last-child{border-bottom:none;}
+  .checklist .box{width:18px;height:18px;border:2px solid var(--slate-300);border-radius:5px;flex-shrink:0;margin-top:2px;}
+  .checklist .q{font-size:14px;color:var(--text);font-weight:600;line-height:1.5;}
+  .checklist .q .sys{font-size:11.5px;font-weight:700;color:var(--text-3);margin-left:6px;}
+  .checklist .q .why{display:block;font-size:12.5px;color:var(--text-3);font-weight:400;margin-top:2px;}
+
+  /* ===== 优先级提示 ===== */
+  .prio{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s3);}
+  .pcard{border-radius:var(--radius);padding:var(--s3) var(--s4);border:1px solid var(--border);background:var(--surface);}
+  .pcard .ph{font-size:14px;font-weight:800;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid;}
+  .pcard.must .ph{color:var(--pain);border-color:var(--pain-soft);}
+  .pcard.later .ph{color:var(--design);border-color:var(--design-soft);}
+  .pcard p{font-size:13.5px;color:var(--text-2);line-height:1.65;}
+  .pcard p b{color:var(--text);}
+
+  .foot{text-align:center;color:var(--text-3);font-size:12px;margin-top:var(--s5);padding-top:var(--s3);border-top:1px solid var(--border);}
+  .foot .credit{display:inline-block;margin-top:6px;font-size:11px;color:var(--slate-300);}
+
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}}
+
+  @media (max-width:820px){
+    .groups{grid-template-columns:1fr;}
+    .grid6{grid-template-columns:1fr;}
+    .prio{grid-template-columns:1fr;}
+  }
+  @media (max-width:760px){
+    body{padding:var(--s3) var(--s2);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">内部学习稿 · Harness 专题拆解</div>
+    <h1>Harness<span class="serif" style="font-weight:700"> · 企业落地的安全底座</span></h1>
+    <p class="deck">演进图第 ⑧ 阶段的放大版。Harness 不改变 Agent 怎么决策,只负责让它「<b>活得久、跑得稳、不闯祸</b>」。它由六个子系统组成,每一个都在挡一类具体的线上风险 —— 这张图,就是评审时该逐条拍板的清单。</p>
+    <div class="crumb">配合《Agent 演进图》第 ⑧ 阶段使用</div>
+  </header>
+
+  <section class="thesis reveal">
+    <div class="tag">为什么单独画这张</div>
+    <p>Demo 能跑,不等于能上线。LLM 工具调用格式错误率有 <b>5–10%</b>,幻觉更高 —— 没有护甲,Agent 撑不过 24 小时真实流量。</p>
+    <p>Harness 就是包在 Agent 决策核心外面的那层「运行时护甲」。对 PM 来说,它对应的不是某个炫酷功能,而是你手册里最该补齐的那块:Audit、工具治理、人工审核、容错重试 —— 合起来就是一套企业版 Harness。</p>
+  </section>
+
+  <!-- ===== 01 包裹示意 ===== -->
+  <div class="seclabel"><span class="n">01</span><h2>它在架构里的位置:包在决策核心的外面</h2></div>
+  <div class="wrapviz reveal">
+    <div class="shell">
+      <span class="stag">HARNESS · 运行时护甲</span>
+      <div class="core"><b>Agent Loop（决策核心）</b><span>思考 → 调用工具 → 观察 → 再决定</span></div>
+    </div>
+    <p class="note">关键认知:Harness <b>不参与</b>「调哪个工具」这种决策 —— 那是大脑的事。它只在决策的<b>外圈</b>做拦截、校验、重试、记录。大脑可以是概率的、会犯错的;护甲必须是确定的、不出错的。这正是「概率系统嫁接在确定性工程上」最直接的体现。</p>
+  </div>
+
+  <!-- ===== 02 六子系统 ===== -->
+  <div class="seclabel"><span class="n">02</span><h2>六个子系统,按它们回答的三个问题归类</h2><span class="hint">颜色 = 所属问题</span></div>
+
+  <div class="groups">
+    <div class="grp stable reveal"><div class="gq">问题一</div><div class="gt">怎么不崩?</div><div class="gd">可靠性 · 出错也能自己缓过来</div></div>
+    <div class="grp safe reveal"><div class="gq">问题二</div><div class="gt">怎么不闯祸?</div><div class="gd">安全性 · 危险动作有闸门</div></div>
+    <div class="grp clear reveal"><div class="gq">问题三</div><div class="gt">怎么看得见?</div><div class="gd">可控性 · 出了事查得到、复得了盘</div></div>
+  </div>
+
+  <div class="grid6">
+
+    <!-- 1 错误分类与恢复 -->
+    <div class="sub stable reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">1</span><div><div class="name">错误分类与恢复</div><div class="en">Error Handling & Recovery</div></div><span class="gtag stable">不崩</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">工具返回格式错、超时、接口偶发 5xx —— 任何一个未处理的异常都会让整条任务当场中断。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>把错误分级:可重试(超时)/ 可纠正(格式错)/ 必须中止(权限拒绝)</li>
+        <li>可重试的自动退避重试,格式错的回喂让模型自己改</li>
+        <li>真不行就优雅降级,而不是抛栈崩掉</li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>容错重试机制</b></div>
+    </div>
+
+    <!-- 2 迭代控制 -->
+    <div class="sub stable reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">2</span><div><div class="name">迭代控制</div><div class="en">Iteration / Loop Control</div></div><span class="gtag stable">不崩</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">Agent 陷入死循环:反复调同一个失败的工具,既烧 token 又永远不结束 —— 一次失控可能就是一笔可观的账单。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>设最大迭代步数 / 超时 / token 预算上限,到顶强制收尾</li>
+        <li>检测重复动作(同样的调用连续出现就打断)</li>
+        <li>触顶时给出「已尽力」的兜底答复,而非空转</li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>主链路的步数/预算约束</b></div>
+    </div>
+
+    <!-- 3 上下文工程 -->
+    <div class="sub stable reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">3</span><div><div class="name">上下文工程</div><div class="en">Context Engineering</div></div><span class="gtag stable">不崩</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">对话越跑越长,上下文超窗 → 要么报错,要么把关键信息挤掉导致「越聊越笨」、答非所问。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>历史摘要、分层、虚拟分页,把窗口管在安全水位</li>
+        <li>每步只喂「这一步需要的」信息,降噪</li>
+        <li>结构化压缩,而非简单截断丢尾巴</li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>记忆管理 #10(短期上下文)</b></div>
+    </div>
+
+    <!-- 4 工具治理 -->
+    <div class="sub safe reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">4</span><div><div class="name">工具治理</div><div class="en">Tool Governance</div></div><span class="gtag safe">不闯祸</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">模型「决定」调用一个高危工具(删库、扣款、改配置),如果照单执行,一次幻觉就是一次生产事故。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>工具分级 + 权限校验,模型只能调被授权的</li>
+        <li>高危操作先 dry-run / 二次确认,再真正执行</li>
+        <li>参数校验把关,挡住明显越界的调用</li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>Tool Governance #8(受控工具)</b></div>
+    </div>
+
+    <!-- 5 安全防护 -->
+    <div class="sub safe reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">5</span><div><div class="name">安全防护</div><div class="en">Safety & Human Gate</div></div><span class="gtag safe">不闯祸</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">提示注入、越权数据访问、敏感信息外泄;以及「不可逆动作」被自动执行后无法挽回。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>输入/输出过滤,识别注入与敏感数据</li>
+        <li>高风险、不可逆动作设<b>人工审核闸门</b>(Human-in-the-Loop)</li>
+        <li>权限沙箱:限定 Agent 能碰的数据与系统边界</li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>人工审核发布 #12</b></div>
+    </div>
+
+    <!-- 6 可观测性 -->
+    <div class="sub clear reveal">
+      <div class="sub-head">
+        <div class="top"><span class="num">6</span><div><div class="name">可观测性</div><div class="en">Observability</div></div><span class="gtag clear">看得见</span></div>
+      </div>
+      <div class="risk"><div class="rl">挡的风险</div><div class="rt">线上出了 badcase,却不知道它哪一步想错了、为什么这么干 —— 无法复盘,就无法改进,问题只会反复出现。</div></div>
+      <div class="does"><div class="dl">具体做什么</div><ul>
+        <li>全链路轨迹录制:每步的思考、调用、结果都留痕</li>
+        <li>成功率、耗时、token 等指标监控</li>
+        <li>badcase 可回放、可归因,且<b>不落敏感信息</b></li>
+      </ul></div>
+      <div class="map">对应你手册 · <b>Runtime Logs / Audit #11</b></div>
+    </div>
+
+  </div>
+
+  <!-- ===== 03 评审检查清单 ===== -->
+  <div class="seclabel"><span class="n">03</span><h2>拿去评审的检查清单:这六问没答全,就别说"能上线"</h2></div>
+  <div class="checklist reveal">
+    <div class="row"><div class="box"></div><div class="q">工具调用失败时,系统会重试 / 纠正 / 降级,而不是直接崩?<span class="sys">#1 错误恢复</span><span class="why">问开发:格式错误、超时、5xx 分别怎么处理?</span></div></div>
+    <div class="row"><div class="box"></div><div class="q">有没有最大步数 / token 预算上限,防止死循环烧钱?<span class="sys">#2 迭代控制</span><span class="why">问开发:一个任务最坏情况花多少 token?触顶怎么收场?</span></div></div>
+    <div class="row"><div class="box"></div><div class="q">长对话会不会超窗变笨?上下文怎么管?<span class="sys">#3 上下文工程</span><span class="why">问开发:聊到第 50 轮还准不准?靠摘要还是截断?</span></div></div>
+    <div class="row"><div class="box"></div><div class="q">高危工具(删除/扣款/改配置)有没有权限分级和执行前关卡?<span class="sys">#4 工具治理</span><span class="why">问开发:模型能直接调的工具清单是什么?哪些要 dry-run?</span></div></div>
+    <div class="row"><div class="box"></div><div class="q">不可逆动作有没有人工审核闸门?能挡住提示注入吗?<span class="sys">#5 安全防护</span><span class="why">问开发:哪些动作必须人点一下确认?敏感数据怎么隔离?</span></div></div>
+    <div class="row"><div class="box"></div><div class="q">线上 badcase 能不能回放、归因?日志会不会存敏感信息?<span class="sys">#6 可观测性</span><span class="why">问开发:出了问题多久能定位到是哪一步想错的?</span></div></div>
+  </div>
+
+  <!-- ===== 04 优先级 ===== -->
+  <div class="seclabel"><span class="n">04</span><h2>不用一次做全:哪些是上线前提,哪些可以迭代</h2></div>
+  <div class="prio">
+    <div class="pcard must reveal">
+      <div class="ph">上线前必须有(红线)</div>
+      <p><b>#4 工具治理 + #5 安全防护 + #6 可观测性。</b>这三块管的是「不闯祸」和「出事查得到」—— 缺了它们,一次幻觉就可能是一次真实事故,且事后无从追责。这是企业敢不敢按下发布键的底线。</p>
+    </div>
+    <div class="pcard later reveal">
+      <div class="ph">可以随流量迭代(体验线)</div>
+      <p><b>#1 错误恢复 + #2 迭代控制 + #3 上下文工程。</b>这三块管的是「稳和省」—— 直接影响成功率、成本和长对话体验。初版可以先做基础版,再根据真实 badcase 持续打磨。<b>观测先行,数据驱动迭代</b>正是这里。</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    《Agent 演进图 · 深度注解版》第 ⑧ 阶段 Harness 的放大图 · 体系对齐《从0到1搭建 Agent》(阿里技术)<br>
+    <span class="credit">设计应用 UI/UX Pro Max skill · Swiss/Corporate Minimal · WCAG AA · 六子系统 × 三问</span>
+  </div>
+
+</div>
+
+<script>
+  const els=document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.1});
+    els.forEach(el=>io.observe(el));
+  } else { els.forEach(el=>el.classList.add('in')); }
+</script>
+</body>
+</html>

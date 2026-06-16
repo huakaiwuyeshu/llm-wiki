@@ -1,0 +1,1054 @@
+
+===== PDF PAGE 360 =====
+（2）创建 A2A Agent 客户端
+现在，让我们创建一个客户端来与服务端通信：
+（3）创建 Agent 网络
+对于多个 Agent 的协作，我们可以让多个 Agent 相互连接：
+from hello_agents.protocols import A2AClient
+# 创建客户端连接到研究员Agent
+client = A2AClient("http://localhost:5000")
+# 发送研究请求
+response = client.execute_skill("research", "research AI在医疗领域的应用")
+print(f"收到响应：{response.get('result')}")
+# 输出：
+# 收到响应：{'topic': 'AI在医疗领域的应用', 'findings': '关于AI在医疗领域的应用的研究结果...', 
+'sources': ['来源1', '来源2', '来源3']}
+from hello_agents.protocols import A2AServer, A2AClient
+import threading
+import time
+# 1. 创建多个Agent服务
+researcher = A2AServer(
+    name="researcher",
+    description="研究员"
+)
+@researcher.skill("research")
+def do_research(text: str) -> str:
+    import re
+    match = re.search(r'research\s+(.+)', text, re.IGNORECASE)
+    topic = match.group(1).strip() if match else text
+    return str({"topic": topic, "findings": f"{topic}的研究结果"})
+writer = A2AServer(
+    name="writer",
+    description="撰写员"
+)
+@writer.skill("write")
+def write_article(text: str) -> str:
+    import re
+    match = re.search(r'write\s+(.+)', text, re.IGNORECASE)
+    content = match.group(1).strip() if match else text
+    
+    # 尝试解析研究数据
+    try:
+        data = eval(content)
+
+===== PDF PAGE 361 =====
+        topic = data.get("topic", "未知主题")
+        findings = data.get("findings", "无研究结果")
+    except:
+        topic = "未知主题"
+        findings = content
+    
+    return f"# {topic}\n\n基于研究：{findings}\n\n文章内容..."
+editor = A2AServer(
+    name="editor",
+    description="编辑"
+)
+@editor.skill("edit")
+def edit_article(text: str) -> str:
+    import re
+    match = re.search(r'edit\s+(.+)', text, re.IGNORECASE)
+    article = match.group(1).strip() if match else text
+    
+    result = {
+        "article": article + "\n\n[已编辑优化]",
+        "feedback": "文章质量良好",
+        "approved": True
+    }
+    return str(result)
+# 2. 启动所有服务
+threading.Thread(target=lambda: researcher.run(port=5000), daemon=True).start()
+threading.Thread(target=lambda: writer.run(port=5001), daemon=True).start()
+threading.Thread(target=lambda: editor.run(port=5002), daemon=True).start()
+time.sleep(2)  # 等待服务启动
+# 3. 创建客户端连接到各个Agent
+researcher_client = A2AClient("http://localhost:5000")
+writer_client = A2AClient("http://localhost:5001")
+editor_client = A2AClient("http://localhost:5002")
+# 4. 协作流程
+def create_content(topic):
+    # 步骤1：研究
+    research = researcher_client.execute_skill("research", f"research {topic}")
+    research_data = research.get('result', '')
+    
+    # 步骤2：撰写
+    article = writer_client.execute_skill("write", f"write {research_data}")
+    article_content = article.get('result', '')
+    
+    # 步骤3：编辑
+    final = editor_client.execute_skill("edit", f"edit {article_content}")
+    return final.get('result', '')
+# 使用
+
+===== PDF PAGE 362 =====
+10.3.4 在智能体中使用 A2A 工具
+ 
+现在让我们看看如何将 A2A 集成到 HelloAgents 的智能体中。
+（1）使用 A2ATool 包装器
+（2）实战案例：智能客服系统
+让我们构建一个完整的智能客服系统，包含三个 Agent：
+接待员：分析客户问题类型
+技术专家：回答技术问题
+销售顾问：回答销售问题
+result = create_content("AI在医疗领域的应用")
+print(f"\n最终结果：\n{result}")
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import A2ATool
+from dotenv import load_dotenv
+load_dotenv()
+llm = HelloAgentsLLM()
+# 假设已经有一个研究员Agent服务运行在 http://localhost:5000
+# 创建协调者Agent
+coordinator = SimpleAgent(name="协调者", llm=llm)
+# 添加A2A工具，连接到研究员Agent
+researcher_tool = A2ATool(
+    name="researcher",
+    description="研究员Agent，可以搜索和分析资料",
+    agent_url="http://localhost:5000"
+)
+coordinator.add_tool(researcher_tool)
+# 协调者可以调用研究员Agent
+response = coordinator.run("请让研究员帮我研究AI在教育领域的应用")
+print(response)
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import A2ATool
+from hello_agents.protocols import A2AServer
+import threading
+import time
+from dotenv import load_dotenv
+load_dotenv()
+llm = HelloAgentsLLM()
+
+===== PDF PAGE 363 =====
+# 1. 创建技术专家Agent服务
+tech_expert = A2AServer(
+    name="tech_expert",
+    description="技术专家，回答技术问题"
+)
+@tech_expert.skill("answer")
+def answer_tech_question(text: str) -> str:
+    import re
+    match = re.search(r'answer\s+(.+)', text, re.IGNORECASE)
+    question = match.group(1).strip() if match else text
+    # 实际应用中，这里会调用LLM或知识库
+    return f"技术回答：关于'{question}'，我建议您查看我们的技术文档..."
+# 2. 创建销售顾问Agent服务
+sales_advisor = A2AServer(
+    name="sales_advisor",
+    description="销售顾问，回答销售问题"
+)
+@sales_advisor.skill("answer")
+def answer_sales_question(text: str) -> str:
+    import re
+    match = re.search(r'answer\s+(.+)', text, re.IGNORECASE)
+    question = match.group(1).strip() if match else text
+    return f"销售回答：关于'{question}'，我们有特别优惠..."
+# 3. 启动服务
+threading.Thread(target=lambda: tech_expert.run(port=6000), daemon=True).start()
+threading.Thread(target=lambda: sales_advisor.run(port=6001), daemon=True).start()
+time.sleep(2)
+# 4. 创建接待员Agent（使用HelloAgents的SimpleAgent）
+receptionist = SimpleAgent(
+    name="接待员",
+    llm=llm,
+    system_prompt="""你是客服接待员，负责：
+1. 分析客户问题类型（技术问题 or 销售问题）
+2. 将问题转发给相应的专家
+3. 整理专家的回答并返回给客户
+请保持礼貌和专业。"""
+)
+# 添加技术专家工具
+tech_tool = A2ATool(
+    agent_url="http://localhost:6000",
+    name="tech_expert",
+    description="技术专家，回答技术相关问题"
+)
+receptionist.add_tool(tech_tool)
+
+===== PDF PAGE 364 =====
+（3）高级用法：Agent 间协商
+A2A 协议还支持 Agent 间的协商机制：
+# 添加销售顾问工具
+sales_tool = A2ATool(
+    agent_url="http://localhost:6001",
+    name="sales_advisor",
+    description="销售顾问，回答价格、购买相关问题"
+)
+receptionist.add_tool(sales_tool)
+# 5. 处理客户咨询
+def handle_customer_query(query):
+    print(f"\n客户咨询：{query}")
+    print("=" * 50)
+    response = receptionist.run(query)
+    print(f"\n客服回复：{response}")
+    print("=" * 50)
+# 测试不同类型的问题
+if __name__ == "__main__":
+    handle_customer_query("你们的API如何调用？")
+    handle_customer_query("企业版的价格是多少？")
+    handle_customer_query("如何集成到我的Python项目中？")
+from hello_agents.protocols import A2AServer, A2AClient
+import threading
+import time
+# 创建两个需要协商的Agent
+agent1 = A2AServer(
+    name="agent1",
+    description="Agent 1"
+)
+@agent1.skill("propose")
+def handle_proposal(text: str) -> str:
+    """处理协商提案"""
+    import re
+    
+    # 解析提案
+    match = re.search(r'propose\s+(.+)', text, re.IGNORECASE)
+    proposal_str = match.group(1).strip() if match else text
+    
+    try:
+        proposal = eval(proposal_str)
+        task = proposal.get("task")
+        deadline = proposal.get("deadline")
+        
+        # 评估提案
+        if deadline >= 7:  # 至少需要7天
+
+===== PDF PAGE 365 =====
+10.4 ANP 协议实战
+ 
+在 MCP 协议解决了工具调用、A2A 协议解决点对点智能体协作之后，ANP 协议则专注于解决大规模、开放
+网络环境下的智能体管理问题。
+在 10.2 和 10.3 节中，我们学习了 MCP（工具访问）和 A2A（智能体协作）。现在，让我们学习 ANP
+（Agent Network Protocol）协议，它专注于构建大规模、开放的智能体网络。
+            result = {"accepted": True, "message": "接受提案"}
+        else:
+            result = {
+                "accepted": False,
+                "message": "时间太紧",
+                "counter_proposal": {"deadline": 7}
+            }
+        return str(result)
+    except:
+        return str({"accepted": False, "message": "无效的提案格式"})
+agent2 = A2AServer(
+    name="agent2",
+    description="Agent 2"
+)
+@agent2.skill("negotiate")
+def negotiate_task(text: str) -> str:
+    """发起协商"""
+    import re
+    
+    # 解析任务和截止日期
+    match = re.search(r'negotiate\s+task:(.+?)\s+deadline:(\d+)', text, 
+re.IGNORECASE)
+    if match:
+        task = match.group(1).strip()
+        deadline = int(match.group(2))
+        
+        # 向agent1发送提案
+        proposal = {"task": task, "deadline": deadline}
+        return str({"status": "negotiating", "proposal": proposal})
+    else:
+        return str({"status": "error", "message": "无效的协商请求"})
+# 启动服务
+threading.Thread(target=lambda: agent1.run(port=7000), daemon=True).start()
+threading.Thread(target=lambda: agent2.run(port=7001), daemon=True).start()
+
+===== PDF PAGE 366 =====
+10.4.1 协议目标
+ 
+当一个网络中存在大量功能各异的智能体（例如，自然语言处理、图像识别、数据分析等）时，系统会面临
+一系列挑战：
+服务发现：当新任务到达时，如何快速找到能够处理该任务的智能体？
+智能路由：如果多个智能体都能处理同一任务，如何选择最合适的一个（如根据负载、成本等）并向其
+分派任务？
+动态扩展：如何让新加入网络的智能体被其他成员发现和调用？
+ANP 的设计目标就是提供一套标准化的机制，来解决上述的服务发现、路由选择和网络扩展性问题。
+为实现其设计目标，ANP 定义了以下几个核心概念，如表 10.8 所示：
+表 10.8 ANP 核心概念
+我们同样借用官方的入门指南来介绍 ANP 的架构设计，如图 10.9 所示
+图 10.9 ANP 整体流程
+ 
+在这个流程图里，主要包括以下几个步骤：
+1. 服务的发现与匹配：首先，智能体 A 通过一个公开的发现服务，基于语义或功能描述进行查询，以定位到
+符合其任务需求的智能体 B。该发现服务通过预先爬取各智能体对外暴露的标准端点（.well-
+known/agent-descriptions ）来建立索引，从而实现服务需求方与提供方的动态匹配。
+2. 基于 DID 的身份验证：在交互开始时，智能体 A 使用其私钥对包含自身 DID 的请求进行签名。智能体 B 
+收到后，通过解析该 DID 获取对应的公钥，并以此验证签名的真实性与请求的完整性，从而建立起双方的可
+信通信。
+3. 标准化的服务执行：身份验证通过后，智能体 B 响应请求，双方依据预定义的标准接口和数据格式进行数
+据交换或服务调用（如预订、查询等）。标准化的交互流程是实现跨平台、跨系统互操作性的基础。
+总而言之，该机制的核心是利用 DID 构建了一个去中心化的信任根基，并借助标准化的描述协议实现了服务
+的动态发现。这套方法使得智能体能够在无需中央协调的前提下，安全、高效地在互联网上形成协作网络。
+10.4.2 使用 ANP 服务发现
+ 
+（1）创建服务发现中心
+from hello_agents.protocols import ANPDiscovery, register_service
+# 创建服务发现中心
+discovery = ANPDiscovery()
+# 注册Agent服务
+register_service(
+    discovery=discovery,
+    service_id="nlp_agent_1",
+    service_name="NLP处理专家A",
+    service_type="nlp",
+
+===== PDF PAGE 367 =====
+（2）发现服务
+（3）构建 Agent 网络
+    capabilities=["text_analysis", "sentiment_analysis", "ner"],
+    endpoint="http://localhost:8001",
+    metadata={"load": 0.3, "price": 0.01, "version": "1.0.0"}
+)
+register_service(
+    discovery=discovery,
+    service_id="nlp_agent_2",
+    service_name="NLP处理专家B",
+    service_type="nlp",
+    capabilities=["text_analysis", "translation"],
+    endpoint="http://localhost:8002",
+    metadata={"load": 0.7, "price": 0.02, "version": "1.1.0"}
+)
+print("✅ 服务注册完成")
+from hello_agents.protocols import discover_service
+# 按类型查找
+nlp_services = discover_service(discovery, service_type="nlp")
+print(f"找到 {len(nlp_services)} 个NLP服务")
+# 选择负载最低的服务
+best_service = min(nlp_services, key=lambda s: s.metadata.get("load", 1.0))
+print(f"最佳服务：{best_service.service_name} (负载: 
+{best_service.metadata['load']})")
+from hello_agents.protocols import ANPNetwork
+# 创建网络
+network = ANPNetwork(network_id="ai_cluster")
+# 添加节点
+for service in discovery.list_all_services():
+    network.add_node(service.service_id, service.endpoint)
+# 建立连接（根据能力匹配）
+network.connect_nodes("nlp_agent_1", "nlp_agent_2")
+stats = network.get_network_stats()
+print(f"✅ 网络构建完成，共 {stats['total_nodes']} 个节点")
+
+===== PDF PAGE 368 =====
+10.4.3 实战案例
+ 
+让我们构建一个完整的分布式任务调度系统：
+from hello_agents.protocols import ANPDiscovery, register_service
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools.builtin import ANPTool
+import random
+from dotenv import load_dotenv
+load_dotenv()
+llm = HelloAgentsLLM()
+# 1. 创建服务发现中心
+discovery = ANPDiscovery()
+# 2. 注册多个计算节点
+for i in range(10):
+    register_service(
+        discovery=discovery,
+        service_id=f"compute_node_{i}",
+        service_name=f"计算节点{i}",
+        service_type="compute",
+        capabilities=["data_processing", "ml_training"],
+        endpoint=f"http://node{i}:8000",
+        metadata={
+            "load": random.uniform(0.1, 0.9),
+            "cpu_cores": random.choice([4, 8, 16]),
+            "memory_gb": random.choice([16, 32, 64]),
+            "gpu": random.choice([True, False])
+        }
+    )
+print(f"✅ 注册了 {len(discovery.list_all_services())} 个计算节点")
+# 3. 创建任务调度Agent
+scheduler = SimpleAgent(
+    name="任务调度器",
+    llm=llm,
+    system_prompt="""你是一个智能任务调度器，负责：
+1. 分析任务需求
+2. 选择最合适的计算节点
+3. 分配任务
+选择节点时考虑：负载、CPU核心数、内存、GPU等因素。"""
+)
+# 添加ANP工具
+anp_tool = ANPTool(
+    name="service_discovery",
+    description="服务发现工具，可以查找和选择计算节点",
+
+===== PDF PAGE 369 =====
+这是一个负载均衡示例
+    discovery=discovery
+)
+scheduler.add_tool(anp_tool)
+# 4. 智能任务分配
+def assign_task(task_description):
+    print(f"\n任务：{task_description}")
+    print("=" * 50)
+    # 让Agent智能选择节点
+    response = scheduler.run(f"""
+    请为以下任务选择最合适的计算节点：
+    {task_description}
+    要求：
+    1. 列出所有可用节点
+    2. 分析每个节点的特点
+    3. 选择最合适的节点
+    4. 说明选择理由
+    """)
+    print(response)
+    print("=" * 50)
+# 测试不同类型的任务
+assign_task("训练一个大型深度学习模型，需要GPU支持")
+assign_task("处理大量文本数据，需要高内存")
+assign_task("运行轻量级数据分析任务")
+from hello_agents.protocols import ANPDiscovery, register_service
+import random
+# 创建服务发现中心
+discovery = ANPDiscovery()
+# 注册多个相同类型的服务
+for i in range(5):
+    register_service(
+        discovery=discovery,
+        service_id=f"api_server_{i}",
+        service_name=f"API服务器{i}",
+        service_type="api",
+        capabilities=["rest_api"],
+        endpoint=f"http://api{i}:8000",
+        metadata={"load": random.uniform(0.1, 0.9)}
+    )
+# 负载均衡函数
+def get_best_server():
+
+===== PDF PAGE 370 =====
+10.5 构建自定义 MCP 服务器
+ 
+在前面的章节中，我们学习了如何使用现有的 MCP 服务。并且也了解到了不同协议的特点。现在，让我们
+学习如何构建自己的 MCP 服务器。
+10.5.1 创建你的第一个 MCP 服务器
+ 
+（1）为什么要构建自定义 MCP 服务器？
+虽然可以直接使用公开的 MCP 服务，但在许多实际应用场景中，需要构建自定义的 MCP 服务器以满足特定
+需求。
+主要动机包括以下几点：
+封装业务逻辑：将企业内部特有的业务流程或复杂操作封装为标准化的 MCP 工具，供智能体统一调
+用。
+访问私有数据：创建一个安全可控的接口或代理，用于访问内部数据库、API 或其他无法对公网暴露的
+私有数据源。
+性能专项优化：针对高频调用或对响应延迟有严苛要求的应用场景，进行深度优化。
+功能定制扩展：实现标准 MCP 服务未提供的特定功能，例如集成专有算法模型或连接特定的硬件设
+备。
+（2）教学案例：天气查询 MCP 服务器
+让我们从一个简单的天气查询服务器开始，逐步学习 MCP 服务器开发：
+    """选择负载最低的服务器"""
+    servers = discovery.discover_services(service_type="api")
+    if not servers:
+        return None
+    best = min(servers, key=lambda s: s.metadata.get("load", 1.0))
+    return best
+# 模拟请求分配
+for i in range(10):
+    server = get_best_server()
+    print(f"请求 {i+1} -> {server.service_name} (负载: 
+{server.metadata['load']:.2f})")
+    # 更新负载（模拟）
+    server.metadata["load"] += 0.1
+#!/usr/bin/env python3
+"""天气查询 MCP 服务器"""
+import json
+import requests
+import os
+from datetime import datetime
+from typing import Dict, Any
+
+===== PDF PAGE 371 =====
+from hello_agents.protocols import MCPServer
+# 创建 MCP 服务器
+weather_server = MCPServer(name="weather-server", description="真实天气查询服务")
+CITY_MAP = {
+    "北京": "Beijing", "上海": "Shanghai", "广州": "Guangzhou",
+    "深圳": "Shenzhen", "杭州": "Hangzhou", "成都": "Chengdu",
+    "重庆": "Chongqing", "武汉": "Wuhan", "西安": "Xi'an",
+    "南京": "Nanjing", "天津": "Tianjin", "苏州": "Suzhou"
+}
+def get_weather_data(city: str) -> Dict[str, Any]:
+    """从 wttr.in 获取天气数据"""
+    city_en = CITY_MAP.get(city, city)
+    url = f"https://wttr.in/{city_en}?format=j1"
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+    current = data["current_condition"][0]
+    return {
+        "city": city,
+        "temperature": float(current["temp_C"]),
+        "feels_like": float(current["FeelsLikeC"]),
+        "humidity": int(current["humidity"]),
+        "condition": current["weatherDesc"][0]["value"],
+        "wind_speed": round(float(current["windspeedKmph"]) / 3.6, 1),
+        "visibility": float(current["visibility"]),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+# 定义工具函数
+def get_weather(city: str) -> str:
+    """获取指定城市的当前天气"""
+    try:
+        weather_data = get_weather_data(city)
+        return json.dumps(weather_data, ensure_ascii=False, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e), "city": city}, ensure_ascii=False)
+def list_supported_cities() -> str:
+    """列出所有支持的中文城市"""
+    result = {"cities": list(CITY_MAP.keys()), "count": len(CITY_MAP)}
+    return json.dumps(result, ensure_ascii=False, indent=2)
+def get_server_info() -> str:
+    """获取服务器信息"""
+
+===== PDF PAGE 372 =====
+（3）测试自定义 MCP 服务器
+然后创建测试脚本：
+    info = {
+        "name": "Weather MCP Server",
+        "version": "1.0.0",
+        "tools": ["get_weather", "list_supported_cities", "get_server_info"]
+    }
+    return json.dumps(info, ensure_ascii=False, indent=2)
+# 注册工具到服务器
+weather_server.add_tool(get_weather)
+weather_server.add_tool(list_supported_cities)
+weather_server.add_tool(get_server_info)
+if __name__ == "__main__":
+    weather_server.run()
+#!/usr/bin/env python3
+"""测试天气查询 MCP 服务器"""
+import asyncio
+import json
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'HelloAgents'))
+from hello_agents.protocols.mcp.client import MCPClient
+async def test_weather_server():
+    server_script = os.path.join(os.path.dirname(__file__), 
+"14_weather_mcp_server.py")
+    client = MCPClient(["python", server_script])
+    try:
+        async with client:
+            # 测试1: 获取服务器信息
+            info = json.loads(await client.call_tool("get_server_info", {}))
+            print(f"服务器: {info['name']} v{info['version']}")
+            # 测试2: 列出支持的城市
+            cities = json.loads(await client.call_tool("list_supported_cities", {}))
+            print(f"支持城市: {cities['count']} 个")
+            # 测试3: 查询北京天气
+            weather = json.loads(await client.call_tool("get_weather", {"city": "北
+京"}))
+            if "error" not in weather:
+
+===== PDF PAGE 373 =====
+（4）在 Agent 中使用自定义 MCP 服务器
+                print(f"\n北京天气: {weather['temperature']}°C, 
+{weather['condition']}")
+            # 测试4: 查询深圳天气
+            weather = json.loads(await client.call_tool("get_weather", {"city": "深
+圳"}))
+            if "error" not in weather:
+                print(f"深圳天气: {weather['temperature']}°C, 
+{weather['condition']}")
+            print("\n✅ 所有测试完成！")
+    except Exception as e:
+        print(f"❌ 测试失败: {e}")
+if __name__ == "__main__":
+    asyncio.run(test_weather_server())
+"""在 Agent 中使用天气 MCP 服务器"""
+import os
+from dotenv import load_dotenv
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import MCPTool
+load_dotenv()
+def create_weather_assistant():
+    """创建天气助手"""
+    llm = HelloAgentsLLM()
+    assistant = SimpleAgent(
+        name="天气助手",
+        llm=llm,
+        system_prompt="""你是天气助手，可以查询城市天气。
+使用 get_weather 工具查询天气，支持中文城市名。
+"""
+    )
+    # 添加天气 MCP 工具
+    server_script = os.path.join(os.path.dirname(__file__), 
+"14_weather_mcp_server.py")
+    weather_tool = MCPTool(server_command=["python", server_script])
+    assistant.add_tool(weather_tool)
+    return assistant
+
+===== PDF PAGE 374 =====
+def demo():
+    """演示"""
+    assistant = create_weather_assistant()
+    print("\n查询北京天气：")
+    response = assistant.run("北京今天天气怎么样？")
+    print(f"回答: {response}\n")
+def interactive():
+    """交互模式"""
+    assistant = create_weather_assistant()
+    while True:
+        user_input = input("\n你: ").strip()
+        if user_input.lower() in ['quit', 'exit']:
+            break
+        response = assistant.run(user_input)
+        print(f"助手: {response}")
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "demo":
+        demo()
+    else:
+        interactive()
+🔗 连接到 MCP 服务器...
+✅ 连接成功！
+🔌 连接已断开
+✅ 工具 'mcp_get_weather' 已注册。
+✅ 工具 'mcp_list_supported_cities' 已注册。
+✅ 工具 'mcp_get_server_info' 已注册。
+✅ MCP工具 'mcp' 已展开为 3 个独立工具
+你: 我想查询北京的天气
+🔗 连接到 MCP 服务器...
+✅ 连接成功！
+🔌 连接已断开
+助手: 当前北京的天气情况如下：
+- 温度：10.0°C
+- 体感温度：9.0°C
+- 湿度：94%
+- 天气状况：小雨
+- 风速：1.7米/秒
+- 能见度：10.0公里
+- 时间戳：2025年10月9日 13:46:40
+
+===== PDF PAGE 375 =====
+10.5.2 上传 MCP 服务器
+ 
+我们创建了一个真实的天气查询 MCP 服务器。现在，让我们将它发布到 Smithery 平台，让全世界的开发者
+都能使用我们的服务。
+ （1）什么是 Smithery？
+Smithery 是 MCP 服务器的官方发布平台，类似于 Python 的 PyPI 或 Node.js 的 npm。通过 Smithery，用
+户可以：
+🔍 发现和搜索 MCP 服务器
+📦 一键安装 MCP 服务器
+📊 查看服务器的使用统计和评价
+🔄 自动获取服务器更新
+（2）准备发布
+首先，我们需要将项目整理成标准的发布格式，这个文件夹已经在code 目录下整理好，可供大家参考：
+需要注意的是，smithery.yaml 是 Smithery 平台的配置文件：
+请注意携带雨具，并根据天气变化适当调整着装。
+weather-mcp-server/
+├── README.md           # 项目说明文档
+├── LICENSE            # 开源许可证
+├── Dockerfile         # Docker 构建配置（推荐）
+├── pyproject.toml     # Python 项目配置（必需）
+├── requirements.txt   # Python 依赖
+├── smithery.yaml      # Smithery 配置文件（必需）
+└── server.py          # MCP 服务器主文件
+name: weather-mcp-server
+displayName: Weather MCP Server
+description: Real-time weather query MCP server based on HelloAgents framework
+version: 1.0.0
+author: HelloAgents Team
+homepage: https://github.com/yourusername/weather-mcp-server
+license: MIT
+categories:
+  - weather
+  - data
+tags:
+  - weather
+  - real-time
+  - helloagents
+  - wttr
+runtime: container
+build:
+  dockerfile: Dockerfile
+  dockerBuildPath: .
+
+===== PDF PAGE 376 =====
+配置说明：
+name : 服务器的唯一标识符（小写，用连字符分隔）
+displayName : 显示名称
+description : 简短描述
+version : 版本号（遵循语义化版本）
+runtime : 运行时环境（python/node）
+entrypoint : 入口文件
+tools : 工具列表
+pyproject.toml 是 Python 项目的标准配置文件，Smithery 要求必须包含此文件，因为后续会打包成一个 
+server：
+startCommand:
+  type: http
+tools:
+  - name: get_weather
+    description: Get current weather for a city
+  - name: list_supported_cities
+    description: List all supported cities
+  - name: get_server_info
+    description: Get server information
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "weather-mcp-server"
+version = "1.0.0"
+description = "Real-time weather query MCP server based on HelloAgents framework"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "HelloAgents Team", email = "xxx"}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "hello-agents>=0.2.1",
+    "requests>=2.31.0",
+]
+[project.urls]
+Homepage = "https://github.com/yourusername/weather-mcp-server"
+Repository = "https://github.com/yourusername/weather-mcp-server"
+"Bug Tracker" = "https://github.com/yourusername/weather-mcp-server/issues"
+[tool.setuptools]
+py-modules = ["server"]
+
+===== PDF PAGE 377 =====
+配置说明：
+[build-system] : 指定构建工具（setuptools）
+[project] : 项目元数据
+name : 项目名称
+version : 版本号（遵循语义化版本）
+dependencies : 项目依赖列表
+requires-python : Python 版本要求
+[project.urls] : 项目相关链接
+[tool.setuptools] : setuptools 配置
+虽然 Smithery 会自动生成 Dockerfile，但提供自定义 Dockerfile 可以确保部署成功：
+Dockerfile 配置说明：
+# Multi-stage build for weather-mcp-server
+FROM python:3.12-slim-bookworm as base
+# Set working directory
+WORKDIR /app
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+# Copy project files
+COPY pyproject.toml requirements.txt ./
+COPY server.py ./
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8081
+# Expose port (Smithery uses 8081)
+EXPOSE 8081
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)"
+# Run the MCP server
+CMD ["python", "server.py"]
+
+===== PDF PAGE 378 =====
+基础镜像: python:3.12-slim-bookworm  - 轻量级 Python 镜像
+工作目录: /app  - 应用程序根目录
+端口: 8081  - Smithery 平台标准端口
+启动命令: python server.py  - 运行 MCP 服务器
+在这里，我们需要 Fork hello-agents 仓库，得到code 中的源码，并使用自己的 github 创建一个名为
+weather-mcp-server 的仓库，将yourusername 改为自己 github 的 Username。
+（3）提交到 Smithery
+打开浏览器，访问 https://smithery.ai/。使用 GitHub 账号登录 Smithery。点击页面上的 "Publish Server" 
+按钮，输入你的 GitHub 仓库 URL：https://github.com/yourusername/weather-mcp-server ，即可等
+待发布。
+一旦发布完成，可以看到类似这样的页面，如图 10.10 所示：
+图 10.10 Smithery 发布成功页面 
+ 
+一旦服务器发布成功，用户可以通过以下方式使用：
+方式 1：通过 Smithery CLI
+方式 2：在 Claude Desktop 中配置
+方式 3：在 HelloAgents 中使用
+# 安装 Smithery CLI
+npm install -g @smithery/cli
+# 安装你的服务器
+smithery install weather-mcp-server
+{
+  "mcpServers": {
+    "weather": {
+      "command": "smithery",
+      "args": ["run", "weather-mcp-server"]
+    }
+  }
+}
+
+===== PDF PAGE 379 =====
+当然，这里只是举例，还有更多的用法可以自行探索，下图 10.11 展示了当 MCP 工具发布成功会包含的信
+息，显示服务的名称“天气”，其唯一标识符 @jjyaoao/weather-mcp-server ，以及状态信息。Tools 区域
+就是我们刚刚实现的方法，Connect 区则提供了连接和使用此服务所需的技术信息，包括服务的接入 URL 
+地址和多种语言/环境下的配置代码片段。如果想要更加深入了解可以点击这个链接。
+图 10.11 Smithery 发布成功的 MCP 工具 
+现在是时候去创造你的 MCP 服务器了！
+ 
+10.6 本章总结
+ 
+本章系统性地介绍了智能体通信的三种核心协议：MCP、A2A 与 ANP，并探讨了它们的设计理念、应用场景
+与实践方法。
+协议定位：
+MCP (Model Context Protocol): 作为智能体与工具之间的桥梁，提供统一的工具访问接口，适用于
+增强单个智能体的能力。
+A2A (Agent-to-Agent Protocol): 作为智能体之间的对话系统，支持直接通信与任务协商，适用于小
+规模团队的紧密协作。
+ANP (Agent Network Protocol): 作为智能体的“互联网”，提供服务发现、路由与负载均衡机制，适
+用于构建大规模、开放的智能体网络。
+HelloAgents 的集成方案
+在HelloAgents 框架中，这三种协议被统一抽象为工具（Tool），实现了无缝集成，允许开发者灵活地为智
+能体添加不同层级的通信能力：
+from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools.builtin.protocol_tools import MCPTool
+agent = SimpleAgent(name="天气助手", llm=HelloAgentsLLM())
+# 使用 Smithery 安装的服务器
+weather_tool = MCPTool(
+    server_command=["smithery", "run", "weather-mcp-server"]
+)
+agent.add_tool(weather_tool)
+response = agent.run("北京今天天气怎么样？")
+# 统一的Tool接口
+from hello_agents.tools import MCPTool, A2ATool, ANPTool
+# 所有协议都可以作为Tool添加到Agent
+agent.add_tool(MCPTool(...))
+agent.add_tool(A2ATool(...))
+agent.add_tool(ANPTool(...))
+
+===== PDF PAGE 380 =====
+实战经验总结
+优先利用成熟的社区 MCP 服务，以减少不必要的重复开发。
+根据系统规模选择合适的协议：小规模协作场景推荐使用 A2A，大规模网络场景则应采用 ANP。
+完成本章后，建议你：
+1. 动手实践：
+构建自己的 MCP 服务器
+利用协议创建多 Agent 协作系统
+MCP、A2A 与 ANP 的组合应用策略
+2. 深入学习：
+阅读 MCP 官方文档：https://modelcontextprotocol.io
+阅读 A2A 官方文档：https://a2a-protocol.org/latest/
+阅读 ANP 官方文档：https://agent-network-protocol.com/guide/
+3. 参与社区：
+向社区贡献新的 MCP 服务
+分享个人开发的智能体实现案例
+参与相关协议的技术标准讨论，也可以在 Issue 提问或是直接帮助 Helloagents 支持新的 
+example 案例
+恭喜你完成第十章的学习！
+你现在已经掌握了智能体通信协议的核心知识。继续加油！🚀
+习题
+ 
+提示：部分习题没有标准答案，重点在于培养学习者对智能体通信协议的综合理解和实践能力。
+1. 本章介绍了三种智能体通信协议：MCP、A2A 和 ANP。请分析：
+在 10.1.2 节中对比了三种协议的设计理念。请深入分析：为什么 MCP 强调"上下文共享"，A2A 强
+调"对话式协作"，而 ANP 强调"网络拓扑"？这些设计理念分别解决了什么核心问题？
+假设你要构建一个"智能客服系统"，需要以下功能：（1）访问客户数据库和订单系统；（2）多
+个专业客服智能体协作处理复杂问题；（3）支持大规模并发用户请求。请为每个功能选择最合适
+的协议，并说明理由。
+三种协议是否可以组合使用？请设计一个实际应用场景，展示如何同时使用 MCP、A2A 和 ANP 
+来构建一个完整的智能体系统。画出系统架构图并说明各协议的职责。
+2. MCP（Model Context Protocol）是智能体与工具通信的标准协议。基于 10.2 节的内容，请深入思
+考：
+提示：这是一道动手实践题，建议实际操作
+在 10.2.3 节的 MCP 服务器实现中，我们定义了list_tools 、call_tool 等核心方法。请扩展
+这个实现，添加一个新的 MCP 服务器，提供以下工具：（1）数据库查询工具；（2）数据可视化
+工具；（3）报表生成工具。要求工具之间能够协作完成复杂的数据分析任务。
+
+===== PDF PAGE 381 =====
+MCP 协议支持"资源"（Resources）和"提示"（Prompts）两个重要概念，但本章主要聚焦于"工
+具"（Tools）。请查阅 MCP 官方文档，了解 Resources 和 Prompts 的设计目的，并设计一个应
+用场景，展示如何利用这三个核心概念构建更强大的智能体系统。
+MCP 使用 JSON-RPC 2.0 作为底层通信协议，通过 stdio 进行进程间通信。请分析：这种设计有什
+么优势和局限性？如果需要支持远程 MCP 服务器（通过 HTTP/WebSocket 访问），应该如何扩
+展当前的实现？
+3. A2A（Agent-to-Agent Protocol）支持智能体间的对话式协作。基于 10.3 节的内容，请完成以下扩展
+实践：
+提示：这是一道动手实践题，建议实际操作
+在 10.3.4 节的"研究团队"案例中，研究员和撰写员通过 A2A 协议协作完成论文写作。请扩展这个
+案例，添加第三个智能体"审稿人"（Reviewer），它能够评审论文质量并提出修改建议。设计三
+个智能体之间的协作流程，并实现完整的代码。
+A2A 协议定义了task 、task_result 等消息类型。请分析：如果协作过程中出现冲突（如两个
+智能体对同一问题有不同意见），应该如何设计冲突解决机制？请扩展 A2A 协议，添加"协
+商"（negotiation）和"投票"（voting）等消息类型。
+对比 A2A 协议与第六章介绍的 AutoGen、CAMEL 等多智能体框架：A2A 作为标准协议，与这些
+框架的关系是什么？它们能否互相替代？请设计一个方案，让基于 A2A 协议的智能体能够与 
+AutoGen 框架中的智能体进行通信。
+4. ANP（Agent Network Protocol）支持大规模智能体网络。基于 10.4 节的内容，请深入分析：
+在 10.4.2 节中介绍了 ANP 的网络拓扑设计，包括星型、网状、分层等结构。请分析：在什么场景
+下应该选择哪种拓扑结构？如果网络规模从 10 个智能体扩展到 1000 个智能体，拓扑结构应该如
+何演进？
+ANP 协议支持"路由"（routing）和"发现"（discovery）机制，让智能体能够动态找到合适的协作
+伙伴。请设计一个"智能路由算法"：根据任务类型、智能体能力、网络负载等因素，自动选择最优
+的消息路由路径。
+在 10.4.4 节的"智能城市"案例中，多个智能体协作管理城市系统。请思考：如果某个关键智能体
+（如交通管理智能体）出现故障，整个系统应该如何应对？请设计一个"容错机制"，包括故障检
+测、备份切换、状态恢复等功能。
+5. 智能体通信协议的安全性和隐私保护是实际应用中的关键问题。请思考：
+在 10.2.4 节的 MCP 客户端实现中，智能体可以调用 MCP 服务器提供的任何工具。请分析：这种
+设计存在什么安全风险？如果 MCP 服务器提供了危险操作（如删除文件、执行系统命令），应该
+如何设计权限控制机制？
+A2A 和 ANP 协议涉及多个智能体之间的通信，可能包含敏感信息（如用户隐私数据、商业机
+密）。请设计一个"端到端加密"方案：确保消息在传输过程中不被窃听或篡改，同时支持智能体身
+份认证和访问控制。
+在大规模智能体网络中，恶意智能体可能会发送虚假信息、发起拒绝服务攻击或窃取其他智能体
+的数据。请设计一个"信任评估系统"：根据智能体的历史行为、协作质量、社区评价等因素，动态
+评估每个智能体的可信度，并据此调整通信策略。
+参考文献
+ 
+
+===== PDF PAGE 382 =====
+[1] Anthropic. (2024). Model Context Protocol. Retrieved October 7, 2025, from https://modelcontextpro
+tocol.io/
+[2] The A2A Project. (2025). A2A Protocol: An open protocol for agent-to-agent communication. Retrieved 
+October 7, 2025, from https://a2a-protocol.org/
+[3] Chang, G., Lin, E., Yuan, C., Cai, R., Chen, B., Xie, X., & Zhang, Y. (2025). Agent Network Protocol 
+technical white paper. arXiv. https://doi.org/10.48550/arXiv.2508.00007
+
+===== PDF PAGE 383 =====
+第十一章 Agentic-RL
+ 
+11.1 从 LLM 训练到 Agentic RL
+ 
+在前面的章节中，我们实现了多种智能体范式和通信协议。不过智能体处理更复杂的任务时表现不佳，自然
+会有疑问:如何让智能体具备更强的推理能力?如何让智能体学会更好地使用工具?如何让智能体能够自我改
+进?
+这正是 Agentic RL(基于强化学习的智能体训练)要解决的核心问题。本章将为 HelloAgents 框架引入强化学
+习训练能力，让你能够训练出具备推理、工具使用等高级能力的智能体。我们将从 LLM 训练的基础知识开
+始，逐步深入到监督微调(Supervised Fine-Tuning，SFT)、群组相对策略优化(Group Relative Policy 
+Optimization， GRPO)等实用技术，最终构建一个完整的智能体训练 pipeline。
+11.1.1 从强化学习到 Agentic RL
+ 
+在第二章的 2.4.2 节中，我们介绍了基于强化学习的智能体。强化学习(Reinforcement Learning， RL)是一
+种专注于解决序贯决策问题的学习范式，它通过智能体与环境的直接交互，在"试错"中学习如何最大化长期
+收益。
+现在，让我们将这个框架应用到 LLM 智能体上。考虑一个数学问题求解智能体，它需要回答这样的问题:
+这个问题需要多步推理:首先计算 Janet 每天剩余的鸡蛋数量(16 - 3 - 4 = 9)，然后计算她的收入(9 × 2 = 18)。
+我们可以将这个任务映射到强化学习框架:
+智能体:基于 LLM 的推理系统
+环境:数学问题和验证系统
+状态:当前的问题描述和已有的推理步骤
+行动:生成下一步推理或最终答案
+奖励:答案是否正确(正确+1，错误 0)
+传统的监督学习方法存在三个核心局限:一是数据质量完全决定训练质量，模型只能模仿训练数据，难以超越;
+二是缺乏探索能力，只能被动学习人类提供的路径;三是难以优化长期目标，无法精确优化多步推理的中间过
+程。
+强化学习提供了新的可能性。通过让智能体自主生成多个候选答案并根据正确性获得奖励，它可以学习哪些
+推理路径更优、哪些步骤是关键，甚至发现比人类标注更好的解题方法[8]。这就是 Agentic RL 的核心思想:
+将 LLM 作为可学习策略，嵌入智能体的感知-决策-执行循环，通过强化学习优化多步任务表现。
+问题: Janet's ducks lay 16 eggs per day. She eats three for breakfast
+every morning and bakes muffins for her friends every day with four.
+She sells the remainder at the farmers' market daily for $2 per fresh
+duck egg. How much in dollars does she make every day at the farmers' market?
+
+===== PDF PAGE 384 =====
+11.1.2 LLM 训练全景图
+ 
+在深入 Agentic RL 之前，我们需要先理解 LLM 训练的完整流程。一个强大的 LLM(如 GPT、Claude、
+Qwen)的诞生，通常要经历两个主要阶段:预训练(Pretraining)和后训练(Post-training)。如图 11.1 所示，这
+两个阶段构成了 LLM 从"语言模型"到"对话助手"的完整演化路径。
+图 11.1 LLM 训练全景图
+预训练阶段是 LLM 训练的第一阶段，目标是让模型学习语言的基本规律和世界知识。这个阶段使用海量的文
+本数据(通常是数 TB 级别)，通过自监督学习的方式训练模型。最常见的预训练任务是因果语言建模(Causal 
+Language Modeling)，也称为下一个词预测(Next Token Prediction)。
+给定一个文本序列 
+，模型需要预测下一个词 
+:
+其中  是模型参数，
+ 是模型预测的下一个词的概率分布，目标是最小化负对数似
+然，即最大化预测正确词的概率。例如，给定文本"The cat sat on the"，模型需要预测下一个词最可能
+是"mat"。通过在海量文本上进行这样的训练，模型逐渐学会语法规则(什么样的词序是合法的)、语义知识(词
+与词之间的关系)、世界知识(关于世界的事实性信息)以及基础的推理能力。
+预训练阶段的特点是数据量巨大、计算成本高、学到的是通用的语言理解和生成能力、采用无监督学习。
+后训练阶段则是要解决预训练模型的不足。预训练后的模型虽然具备了强大的语言能力，但它只是一个"预测
+下一个词"的模型，并不知道如何遵循人类的指令、生成有帮助无害诚实的回答、拒绝不当的请求，以及以对
+话的方式与人交互。后训练阶段就是要解决这些问题，让模型对齐人类的偏好和价值观。
+后训练通常包含三个步骤。第一步是监督微调(SFT)[15]，目标是让模型学会遵循指令和对话格式。训练数据
+是(prompt， completion)对，训练目标与预训练类似，仍然是最大化正确输出的概率:
+其中 
+ 是输入提示(prompt)，
+ 是期望的输出，
+ 是训练样本数量。SFT 的特点是数据量较小、需要人工
+标注、快速见效、主要学习任务格式和基本能力。
+第二步是奖励建模(RM)。SFT 后的模型虽然能遵循指令，但生成的回答质量参差不齐。我们需要一种方式来
+评估回答的质量，这就是奖励模型的作用[13,14]。奖励模型的训练数据是偏好对比数据,包含同一个问题的两
+个回答,一个更好(chosen),一个更差(rejected)。奖励模型的训练目标是学习人类的偏好:
+其中 
+ 是奖励模型，输入是(提示，回答)对，输出是质量分数;
+ 是更好的回答(chosen)，
+ 是更差
+的回答(rejected)， 是 sigmoid 函数，目标是让奖励模型给更好的回答更高的分数。
+第三步是强化学习微调。有了奖励模型后，我们就可以用强化学习来优化语言模型，让它生成更高质量的回
+答。最经典的算法是 PPO(Proximal Policy Optimization)[1]，训练目标是:
+
+===== PDF PAGE 385 =====
+其中 
+ 是当前策略，即语言模型，
+ 是参考策略，这个场景下可以是 SFT 模型，
+ 是奖励模型的
+评分，
+ 是 KL 散度，目的是为了防止模型偏离太远， 是平衡系数。这个目标函数的含义是:最大化奖
+励，同时不要偏离原始模型太远。
+传统的 RLHF(Reinforcement Learning from Human Feedback)[5]需要大量人工标注偏好数据，成本高昂。
+为了降低成本，研究者提出了 RLAIF(Reinforcement Learning from AI Feedback)[7]，用强大的 AI 模型(如 
+GPT-4)来替代人类标注员。RLAIF 的工作流程是:用 SFT 模型生成多个候选回答，用强大的 AI 模型对回答进
+行评分和排序，用 AI 的评分训练奖励模型，用奖励模型进行强化学习。实验表明，RLAIF 的效果接近甚至超
+过 RLHF，同时成本大幅降低[11]。
+11.1.3 Agentic RL 的核心理念
+ 
+在理解了 LLM 的基础训练流程后，让我们来看看 Agentic RL 与传统训练方法的区别。传统的后训练(我们称
+之为 PBRFT: Preference-Based Reinforcement Fine-Tuning)主要关注单轮对话的质量优化:给定一个用户问
+题，模型生成一个回答，然后根据回答的质量获得奖励。这种方式适合优化对话助手，但对于需要多步推
+理、工具使用、长期规划的智能体任务来说，就显得力不从心了。
+Agentic RL则是一种新的范式，它将 LLM 视为一个可学习的策略，嵌入在一个顺序决策循环中。在这个框
+架下，智能体需要在动态环境中与外部世界交互，执行多步行动来完成复杂任务，获得中间反馈来指导后续
+决策，优化长期累积奖励而非单步奖励。
+让我们通过一个具体例子来理解这个区别。在 PBRFT 场景中，用户问"请解释什么是强化学习"，模型生成完
+整回答，然后根据回答质量直接给分。而在 Agentic RL 场景中，用户请求"帮我分析这个 GitHub 仓库的代
+码质量"，智能体需要经历多个步骤:首先调用 GitHub API 获取仓库信息，成功获得仓库结构和文件列表，得
+到+0.1 的奖;然后读取主要代码文件，成功获得代码内容，得到+0.1 的奖励;接着分析代码质量合理，得到
++0.2 的奖励;最后生成分析报告质量高，得到+0.6 的奖励。总奖励是所有步骤的累积:1.0。
+可以看到，Agentic RL 的关键特征是多步交互、每一步的行动都会改变环境状态、每一步都可以获得反馈、
+优化整个任务的完成质量。
+强化学习是基于马尔可夫决策过程(Markov Decision Process， MDP)框架进行形式化的。MDP 由五元组 
+ 定义:状态空间、行动空间
+、状态转移函数
+、奖励函数
+、折扣因子
+。让我们从 MDP 的角度对比 PBRFT 和 Agentic RL，如表 11.1 所示。
+表 11.1 PBRFT 与 Agentic RL 对比
+在状态方面，PBRFT 的状态 
+ 仅由用户提示构成，时间跨度 
+(单步)，状态不变化，可以表示为 
+。而 Agentic RL 的状态 
+ 包含历史观察和上下文，时间跨度 
+(多步)，状态随行动演
+化，可以表示为 
+，其中 
+ 是第  步的观察(如工具返回结果、环境反馈
+等)。
+在行动方面，PBRFT 的行动空间只有文本生成，单一行动类型，表示为 
+。而 Agentic RL 
+的行动空间包含文本生成、工具调用、环境操作等多种类型，表示为 
+，例如 
+ 是生
+成思考过程或回答，
+ 是调用计算器、搜索引擎等工具。
+在转移函数方面，PBRFT 无状态转移，表示为 
+。而 Agentic RL 的状态根据
+行动和环境动态变化，表示为 
+，例如调用搜索工具后，状态会包含搜索结果。
+在奖励方面，PBRFT 只有单步奖励 
+，仅在任务结束时给予，表示为 
+，通常由
+奖励模型给出: 
+。而 Agentic RL 有多步奖励 
+，可以在中间步骤给予部分奖
+励，表示为:

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" role="img" aria-label="ReAct main loop and on-demand Plan">
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2D5F8A"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7D8A9A"/>
+    </marker>
+    <style>
+      text{font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0}
+      .title{font-size:21px;font-weight:850;fill:#121B2E}
+      .subtitle{font-size:12px;font-weight:650;fill:#667485}
+      .frame{fill:#FBFCFD;stroke:#D5E0EA;stroke-width:1.5}
+      .panel{fill:#F4F8FB;stroke:#D5E0EA;stroke-width:1.4}
+      .panel-soft{fill:#FFFFFF;stroke:#D8E2EB;stroke-width:1.2}
+      .box{fill:#FFFFFF;stroke:#AFC4D7;stroke-width:1.5}
+      .box-blue{fill:#E9F2FA;stroke:#2D5F8A;stroke-width:1.7}
+      .box-warm{fill:#FFF9ED;stroke:#D4A44E;stroke-width:1.5}
+      .box-green{fill:#F4FAF5;stroke:#83A985;stroke-width:1.5}
+      .txt{font-size:13px;font-weight:780;fill:#172235}
+      .note{font-size:10.5px;font-weight:650;fill:#5F6E80}
+      .tiny{font-size:9.8px;font-weight:760;fill:#38536A}
+      .label{font-size:12px;font-weight:850;fill:#1C466B}
+      .arrow{fill:none;stroke:#2D5F8A;stroke-width:1.8;marker-end:url(#arrow-blue)}
+      .arrow-gray{fill:none;stroke:#7D8A9A;stroke-width:1.45;marker-end:url(#arrow-gray)}
+      .loop{fill:none;stroke:#2D5F8A;stroke-width:1.7;stroke-dasharray:5 4;marker-end:url(#arrow-blue)}
+      .guard{fill:#FFFFFF;stroke:#C7D5E2;stroke-width:1.2}
+      .guard-title{font-size:11px;font-weight:850;fill:#224B6D}
+      .guard-note{font-size:9.5px;font-weight:650;fill:#667485}
+    </style>
+  </defs>
+
+  <rect width="920" height="380" fill="#FFFFFF"/>
+  <text class="title" x="40" y="34">生产实践：ReAct 主循环 + 按需 Plan</text>
+  <text class="subtitle" x="40" y="56">默认让 Agent 边想边做；只有任务跨度变长、依赖步骤变多时，才先创建 Plan，再按计划执行和修正。</text>
+
+  <rect class="frame" x="40" y="78" width="840" height="270" rx="18"/>
+  <text class="label" x="460" y="105" text-anchor="middle">生产级 Agent 运行骨架</text>
+
+  <rect class="panel" x="68" y="124" width="498" height="134" rx="14"/>
+  <text class="label" x="317" y="149" text-anchor="middle">ReAct 主循环（默认运行）</text>
+
+  <rect class="box-blue" x="92" y="171" width="88" height="48" rx="9"/>
+  <text class="txt" x="136" y="191" text-anchor="middle">Think</text>
+  <text class="note" x="136" y="207" text-anchor="middle">判断下一步</text>
+  <path class="arrow" d="M180 195h48"/>
+
+  <rect class="box" x="228" y="171" width="88" height="48" rx="9"/>
+  <text class="txt" x="272" y="191" text-anchor="middle">Act</text>
+  <text class="note" x="272" y="207" text-anchor="middle">追问 / 工具</text>
+  <path class="arrow" d="M316 195h48"/>
+
+  <rect class="box-green" x="364" y="171" width="104" height="48" rx="9"/>
+  <text class="txt" x="416" y="191" text-anchor="middle">Observe</text>
+  <text class="note" x="416" y="207" text-anchor="middle">看结果 / 状态</text>
+  <path class="loop" d="M416 219 C392 250, 160 250, 136 221"/>
+
+  <rect class="box" x="492" y="171" width="50" height="48" rx="24"/>
+  <text class="txt" x="517" y="200" text-anchor="middle">答</text>
+  <path class="arrow" d="M468 195h20"/>
+
+  <rect class="panel-soft" x="96" y="228" width="412" height="22" rx="11"/>
+  <text class="tiny" x="302" y="243" text-anchor="middle">简单任务：直接 Think → Act → Answer；不额外规划，保持灵活高效</text>
+
+  <g transform="translate(612 190)">
+    <polygon class="box-warm" points="0,-42 64,0 0,42 -64,0"/>
+    <text class="txt" x="0" y="-4" text-anchor="middle">复杂？</text>
+    <text class="note" x="0" y="13" text-anchor="middle">5-8 步任务</text>
+  </g>
+  <path class="arrow-gray" d="M566 190h-9"/>
+  <path class="arrow" d="M676 190h34"/>
+  <text class="tiny" x="694" y="178" text-anchor="middle">是</text>
+
+  <rect class="panel" x="710" y="124" width="142" height="134" rx="14"/>
+  <text class="label" x="781" y="149" text-anchor="middle">按需 Plan</text>
+  <rect class="box-blue" x="728" y="166" width="106" height="34" rx="8"/>
+  <text class="txt" x="781" y="188" text-anchor="middle">Create Plan</text>
+  <path class="arrow" d="M781 200v18"/>
+  <rect class="box" x="728" y="218" width="106" height="34" rx="8"/>
+  <text class="txt" x="781" y="240" text-anchor="middle">按 Plan 执行</text>
+  <path class="loop" d="M834 235 C856 220, 856 180, 834 181"/>
+  <text class="tiny" x="848" y="206" text-anchor="middle">更新</text>
+
+  <text class="label" x="110" y="292">关键保障</text>
+  <rect class="guard" x="108" y="304" width="150" height="34" rx="9"/>
+  <text class="guard-title" x="183" y="318" text-anchor="middle">迭代预算</text>
+  <text class="guard-note" x="183" y="332" text-anchor="middle">防无限循环</text>
+  <rect class="guard" x="278" y="304" width="150" height="34" rx="9"/>
+  <text class="guard-title" x="353" y="318" text-anchor="middle">上下文压缩</text>
+  <text class="guard-note" x="353" y="332" text-anchor="middle">防溢出</text>
+  <rect class="guard" x="448" y="304" width="150" height="34" rx="9"/>
+  <text class="guard-title" x="523" y="318" text-anchor="middle">错误重试</text>
+  <text class="guard-note" x="523" y="332" text-anchor="middle">防临时故障</text>
+  <rect class="guard" x="618" y="304" width="150" height="34" rx="9"/>
+  <text class="guard-title" x="693" y="318" text-anchor="middle">工具修复</text>
+  <text class="guard-note" x="693" y="332" text-anchor="middle">防格式错误</text>
+</svg>

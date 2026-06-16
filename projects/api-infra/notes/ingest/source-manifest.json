@@ -1,0 +1,1352 @@
+[
+  {
+    "title": "API对接FAQ整理",
+    "original_file_name": "API对接FAQ整理.pdf",
+    "slug": "api-integration-faq",
+    "pages": 3,
+    "size": 276597,
+    "sha256_16": "ab6f0b4e294073bb",
+    "extracted_md": "sources/extracted-md/api-integration-faq.md",
+    "total_chars": 1923,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 694
+      },
+      {
+        "page": 2,
+        "chars": 651
+      },
+      {
+        "page": 3,
+        "chars": 578
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/API对接FAQ整理.pdf"
+  },
+  {
+    "title": "安卓上号 SDK 接入文档",
+    "original_file_name": "安卓上号 SDK 接入文档.pdf",
+    "slug": "android-login-sdk-integration",
+    "pages": 7,
+    "size": 326912,
+    "sha256_16": "06210546ee8391cb",
+    "extracted_md": "sources/extracted-md/android-login-sdk-integration.md",
+    "total_chars": 6786,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 1319
+      },
+      {
+        "page": 2,
+        "chars": 1870
+      },
+      {
+        "page": 3,
+        "chars": 1149
+      },
+      {
+        "page": 4,
+        "chars": 697
+      },
+      {
+        "page": 5,
+        "chars": 819
+      },
+      {
+        "page": 6,
+        "chars": 748
+      },
+      {
+        "page": 7,
+        "chars": 184
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/安卓上号 SDK 接入文档.pdf"
+  },
+  {
+    "title": "API对接流程",
+    "original_file_name": "API对接流程.pdf",
+    "slug": "api-integration-process",
+    "pages": 2,
+    "size": 363365,
+    "sha256_16": "0c03fad540ca617b",
+    "extracted_md": "sources/extracted-md/api-integration-process.md",
+    "total_chars": 571,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 484
+      },
+      {
+        "page": 2,
+        "chars": 87
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/API对接流程.pdf"
+  },
+  {
+    "title": "API新续租完整说明",
+    "original_file_name": "API新续租完整说明.pdf",
+    "slug": "api-new-renewal-guide",
+    "pages": 3,
+    "size": 448790,
+    "sha256_16": "83b631b2467e913e",
+    "extracted_md": "sources/extracted-md/api-new-renewal-guide.md",
+    "total_chars": 1122,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 170
+      },
+      {
+        "page": 2,
+        "chars": 851
+      },
+      {
+        "page": 3,
+        "chars": 101
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/API新续租完整说明.pdf"
+  },
+  {
+    "title": "PC端游SDK说明",
+    "original_file_name": "PC端游SDK说明.pdf",
+    "slug": "pc-game-sdk-guide",
+    "pages": 7,
+    "size": 524838,
+    "sha256_16": "f0c023b35f29d707",
+    "extracted_md": "sources/extracted-md/pc-game-sdk-guide.md",
+    "total_chars": 2672,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 85
+      },
+      {
+        "page": 2,
+        "chars": 123
+      },
+      {
+        "page": 3,
+        "chars": 801
+      },
+      {
+        "page": 4,
+        "chars": 508
+      },
+      {
+        "page": 5,
+        "chars": 689
+      },
+      {
+        "page": 6,
+        "chars": 444
+      },
+      {
+        "page": 7,
+        "chars": 22
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/PC端游SDK说明.pdf"
+  },
+  {
+    "title": "三方标准号池方案",
+    "original_file_name": "三方标准号池方案.pdf",
+    "slug": "third-party-standard-number-pool",
+    "pages": 11,
+    "size": 1121923,
+    "sha256_16": "901be40a7973f2ac",
+    "extracted_md": "sources/extracted-md/third-party-standard-number-pool.md",
+    "total_chars": 4627,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 205
+      },
+      {
+        "page": 2,
+        "chars": 182
+      },
+      {
+        "page": 3,
+        "chars": 204
+      },
+      {
+        "page": 4,
+        "chars": 403
+      },
+      {
+        "page": 5,
+        "chars": 209
+      },
+      {
+        "page": 6,
+        "chars": 636
+      },
+      {
+        "page": 7,
+        "chars": 378
+      },
+      {
+        "page": 8,
+        "chars": 653
+      },
+      {
+        "page": 9,
+        "chars": 531
+      },
+      {
+        "page": 10,
+        "chars": 681
+      },
+      {
+        "page": 11,
+        "chars": 545
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/三方标准号池方案.pdf"
+  },
+  {
+    "title": "iOS API接口服务接入文档",
+    "original_file_name": "iOS API接口服务接入文档.pdf",
+    "slug": "ios-api-service-integration",
+    "pages": 20,
+    "size": 1852835,
+    "sha256_16": "3371b5a7bc5fbf15",
+    "extracted_md": "sources/extracted-md/ios-api-service-integration.md",
+    "total_chars": 13044,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 455
+      },
+      {
+        "page": 2,
+        "chars": 220
+      },
+      {
+        "page": 3,
+        "chars": 77
+      },
+      {
+        "page": 4,
+        "chars": 600
+      },
+      {
+        "page": 5,
+        "chars": 746
+      },
+      {
+        "page": 6,
+        "chars": 652
+      },
+      {
+        "page": 7,
+        "chars": 1332
+      },
+      {
+        "page": 8,
+        "chars": 675
+      },
+      {
+        "page": 9,
+        "chars": 819
+      },
+      {
+        "page": 10,
+        "chars": 843
+      },
+      {
+        "page": 11,
+        "chars": 2043
+      },
+      {
+        "page": 12,
+        "chars": 534
+      },
+      {
+        "page": 13,
+        "chars": 76
+      },
+      {
+        "page": 14,
+        "chars": 1682
+      },
+      {
+        "page": 15,
+        "chars": 492
+      },
+      {
+        "page": 16,
+        "chars": 800
+      },
+      {
+        "page": 17,
+        "chars": 210
+      },
+      {
+        "page": 18,
+        "chars": 26
+      },
+      {
+        "page": 19,
+        "chars": 156
+      },
+      {
+        "page": 20,
+        "chars": 606
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/iOS API接口服务接入文档.pdf"
+  },
+  {
+    "title": "三方渠道整理",
+    "original_file_name": "三方渠道整理.pdf",
+    "slug": "third-party-channel-summary",
+    "pages": 11,
+    "size": 2403590,
+    "sha256_16": "e20bf408e67fa9c7",
+    "extracted_md": "sources/extracted-md/third-party-channel-summary.md",
+    "total_chars": 3408,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 607
+      },
+      {
+        "page": 2,
+        "chars": 444
+      },
+      {
+        "page": 3,
+        "chars": 192
+      },
+      {
+        "page": 4,
+        "chars": 283
+      },
+      {
+        "page": 5,
+        "chars": 372
+      },
+      {
+        "page": 6,
+        "chars": 155
+      },
+      {
+        "page": 7,
+        "chars": 222
+      },
+      {
+        "page": 8,
+        "chars": 486
+      },
+      {
+        "page": 9,
+        "chars": 356
+      },
+      {
+        "page": 10,
+        "chars": 291
+      },
+      {
+        "page": 11,
+        "chars": 0
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/三方渠道整理.pdf"
+  },
+  {
+    "title": "货架共享第三方API接口文档",
+    "original_file_name": "货架共享第三方API接口文档.pdf",
+    "slug": "shelf-sharing-third-party-api",
+    "pages": 119,
+    "size": 5054078,
+    "sha256_16": "693b4e52eccf0dd0",
+    "extracted_md": "sources/extracted-md/shelf-sharing-third-party-api.md",
+    "total_chars": 67670,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 302
+      },
+      {
+        "page": 2,
+        "chars": 529
+      },
+      {
+        "page": 3,
+        "chars": 372
+      },
+      {
+        "page": 4,
+        "chars": 378
+      },
+      {
+        "page": 5,
+        "chars": 153
+      },
+      {
+        "page": 6,
+        "chars": 377
+      },
+      {
+        "page": 7,
+        "chars": 334
+      },
+      {
+        "page": 8,
+        "chars": 137
+      },
+      {
+        "page": 9,
+        "chars": 552
+      },
+      {
+        "page": 10,
+        "chars": 284
+      },
+      {
+        "page": 11,
+        "chars": 682
+      },
+      {
+        "page": 12,
+        "chars": 648
+      },
+      {
+        "page": 13,
+        "chars": 1416
+      },
+      {
+        "page": 14,
+        "chars": 1261
+      },
+      {
+        "page": 15,
+        "chars": 1069
+      },
+      {
+        "page": 16,
+        "chars": 10
+      },
+      {
+        "page": 17,
+        "chars": 10
+      },
+      {
+        "page": 18,
+        "chars": 21
+      },
+      {
+        "page": 19,
+        "chars": 227
+      },
+      {
+        "page": 20,
+        "chars": 922
+      },
+      {
+        "page": 21,
+        "chars": 687
+      },
+      {
+        "page": 22,
+        "chars": 489
+      },
+      {
+        "page": 23,
+        "chars": 434
+      },
+      {
+        "page": 24,
+        "chars": 400
+      },
+      {
+        "page": 25,
+        "chars": 892
+      },
+      {
+        "page": 26,
+        "chars": 904
+      },
+      {
+        "page": 27,
+        "chars": 786
+      },
+      {
+        "page": 28,
+        "chars": 698
+      },
+      {
+        "page": 29,
+        "chars": 616
+      },
+      {
+        "page": 30,
+        "chars": 622
+      },
+      {
+        "page": 31,
+        "chars": 713
+      },
+      {
+        "page": 32,
+        "chars": 511
+      },
+      {
+        "page": 33,
+        "chars": 645
+      },
+      {
+        "page": 34,
+        "chars": 560
+      },
+      {
+        "page": 35,
+        "chars": 446
+      },
+      {
+        "page": 36,
+        "chars": 606
+      },
+      {
+        "page": 37,
+        "chars": 765
+      },
+      {
+        "page": 38,
+        "chars": 731
+      },
+      {
+        "page": 39,
+        "chars": 1210
+      },
+      {
+        "page": 40,
+        "chars": 909
+      },
+      {
+        "page": 41,
+        "chars": 722
+      },
+      {
+        "page": 42,
+        "chars": 538
+      },
+      {
+        "page": 43,
+        "chars": 548
+      },
+      {
+        "page": 44,
+        "chars": 575
+      },
+      {
+        "page": 45,
+        "chars": 616
+      },
+      {
+        "page": 46,
+        "chars": 472
+      },
+      {
+        "page": 47,
+        "chars": 1019
+      },
+      {
+        "page": 48,
+        "chars": 552
+      },
+      {
+        "page": 49,
+        "chars": 708
+      },
+      {
+        "page": 50,
+        "chars": 847
+      },
+      {
+        "page": 51,
+        "chars": 726
+      },
+      {
+        "page": 52,
+        "chars": 384
+      },
+      {
+        "page": 53,
+        "chars": 536
+      },
+      {
+        "page": 54,
+        "chars": 423
+      },
+      {
+        "page": 55,
+        "chars": 461
+      },
+      {
+        "page": 56,
+        "chars": 441
+      },
+      {
+        "page": 57,
+        "chars": 388
+      },
+      {
+        "page": 58,
+        "chars": 511
+      },
+      {
+        "page": 59,
+        "chars": 567
+      },
+      {
+        "page": 60,
+        "chars": 539
+      },
+      {
+        "page": 61,
+        "chars": 430
+      },
+      {
+        "page": 62,
+        "chars": 479
+      },
+      {
+        "page": 63,
+        "chars": 418
+      },
+      {
+        "page": 64,
+        "chars": 654
+      },
+      {
+        "page": 65,
+        "chars": 865
+      },
+      {
+        "page": 66,
+        "chars": 486
+      },
+      {
+        "page": 67,
+        "chars": 588
+      },
+      {
+        "page": 68,
+        "chars": 674
+      },
+      {
+        "page": 69,
+        "chars": 553
+      },
+      {
+        "page": 70,
+        "chars": 326
+      },
+      {
+        "page": 71,
+        "chars": 526
+      },
+      {
+        "page": 72,
+        "chars": 516
+      },
+      {
+        "page": 73,
+        "chars": 448
+      },
+      {
+        "page": 74,
+        "chars": 285
+      },
+      {
+        "page": 75,
+        "chars": 466
+      },
+      {
+        "page": 76,
+        "chars": 455
+      },
+      {
+        "page": 77,
+        "chars": 339
+      },
+      {
+        "page": 78,
+        "chars": 471
+      },
+      {
+        "page": 79,
+        "chars": 713
+      },
+      {
+        "page": 80,
+        "chars": 1035
+      },
+      {
+        "page": 81,
+        "chars": 584
+      },
+      {
+        "page": 82,
+        "chars": 615
+      },
+      {
+        "page": 83,
+        "chars": 550
+      },
+      {
+        "page": 84,
+        "chars": 368
+      },
+      {
+        "page": 85,
+        "chars": 401
+      },
+      {
+        "page": 86,
+        "chars": 391
+      },
+      {
+        "page": 87,
+        "chars": 616
+      },
+      {
+        "page": 88,
+        "chars": 994
+      },
+      {
+        "page": 89,
+        "chars": 1090
+      },
+      {
+        "page": 90,
+        "chars": 500
+      },
+      {
+        "page": 91,
+        "chars": 570
+      },
+      {
+        "page": 92,
+        "chars": 537
+      },
+      {
+        "page": 93,
+        "chars": 410
+      },
+      {
+        "page": 94,
+        "chars": 395
+      },
+      {
+        "page": 95,
+        "chars": 480
+      },
+      {
+        "page": 96,
+        "chars": 669
+      },
+      {
+        "page": 97,
+        "chars": 438
+      },
+      {
+        "page": 98,
+        "chars": 475
+      },
+      {
+        "page": 99,
+        "chars": 473
+      },
+      {
+        "page": 100,
+        "chars": 514
+      },
+      {
+        "page": 101,
+        "chars": 578
+      },
+      {
+        "page": 102,
+        "chars": 492
+      },
+      {
+        "page": 103,
+        "chars": 359
+      },
+      {
+        "page": 104,
+        "chars": 372
+      },
+      {
+        "page": 105,
+        "chars": 309
+      },
+      {
+        "page": 106,
+        "chars": 754
+      },
+      {
+        "page": 107,
+        "chars": 371
+      },
+      {
+        "page": 108,
+        "chars": 398
+      },
+      {
+        "page": 109,
+        "chars": 429
+      },
+      {
+        "page": 110,
+        "chars": 409
+      },
+      {
+        "page": 111,
+        "chars": 373
+      },
+      {
+        "page": 112,
+        "chars": 460
+      },
+      {
+        "page": 113,
+        "chars": 429
+      },
+      {
+        "page": 114,
+        "chars": 402
+      },
+      {
+        "page": 115,
+        "chars": 967
+      },
+      {
+        "page": 116,
+        "chars": 1288
+      },
+      {
+        "page": 117,
+        "chars": 1135
+      },
+      {
+        "page": 118,
+        "chars": 1235
+      },
+      {
+        "page": 119,
+        "chars": 232
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/货架共享第三方API接口文档.pdf"
+  },
+  {
+    "title": "货架管理三方API文档",
+    "original_file_name": "货架管理三方API文档.pdf",
+    "slug": "shelf-management-third-party-api",
+    "pages": 122,
+    "size": 11995003,
+    "sha256_16": "f4138d1575e4e92e",
+    "extracted_md": "sources/extracted-md/shelf-management-third-party-api.md",
+    "total_chars": 51693,
+    "page_chars": [
+      {
+        "page": 1,
+        "chars": 466
+      },
+      {
+        "page": 2,
+        "chars": 288
+      },
+      {
+        "page": 3,
+        "chars": 156
+      },
+      {
+        "page": 4,
+        "chars": 274
+      },
+      {
+        "page": 5,
+        "chars": 520
+      },
+      {
+        "page": 6,
+        "chars": 277
+      },
+      {
+        "page": 7,
+        "chars": 651
+      },
+      {
+        "page": 8,
+        "chars": 644
+      },
+      {
+        "page": 9,
+        "chars": 908
+      },
+      {
+        "page": 10,
+        "chars": 1346
+      },
+      {
+        "page": 11,
+        "chars": 754
+      },
+      {
+        "page": 12,
+        "chars": 173
+      },
+      {
+        "page": 13,
+        "chars": 148
+      },
+      {
+        "page": 14,
+        "chars": 333
+      },
+      {
+        "page": 15,
+        "chars": 222
+      },
+      {
+        "page": 16,
+        "chars": 193
+      },
+      {
+        "page": 17,
+        "chars": 219
+      },
+      {
+        "page": 18,
+        "chars": 303
+      },
+      {
+        "page": 19,
+        "chars": 334
+      },
+      {
+        "page": 20,
+        "chars": 183
+      },
+      {
+        "page": 21,
+        "chars": 150
+      },
+      {
+        "page": 22,
+        "chars": 248
+      },
+      {
+        "page": 23,
+        "chars": 274
+      },
+      {
+        "page": 24,
+        "chars": 239
+      },
+      {
+        "page": 25,
+        "chars": 173
+      },
+      {
+        "page": 26,
+        "chars": 187
+      },
+      {
+        "page": 27,
+        "chars": 115
+      },
+      {
+        "page": 28,
+        "chars": 296
+      },
+      {
+        "page": 29,
+        "chars": 146
+      },
+      {
+        "page": 30,
+        "chars": 188
+      },
+      {
+        "page": 31,
+        "chars": 264
+      },
+      {
+        "page": 32,
+        "chars": 4
+      },
+      {
+        "page": 33,
+        "chars": 0
+      },
+      {
+        "page": 34,
+        "chars": 0
+      },
+      {
+        "page": 35,
+        "chars": 0
+      },
+      {
+        "page": 36,
+        "chars": 63
+      },
+      {
+        "page": 37,
+        "chars": 989
+      },
+      {
+        "page": 38,
+        "chars": 1195
+      },
+      {
+        "page": 39,
+        "chars": 1143
+      },
+      {
+        "page": 40,
+        "chars": 1254
+      },
+      {
+        "page": 41,
+        "chars": 1157
+      },
+      {
+        "page": 42,
+        "chars": 1174
+      },
+      {
+        "page": 43,
+        "chars": 1225
+      },
+      {
+        "page": 44,
+        "chars": 988
+      },
+      {
+        "page": 45,
+        "chars": 109
+      },
+      {
+        "page": 46,
+        "chars": 44
+      },
+      {
+        "page": 47,
+        "chars": 1047
+      },
+      {
+        "page": 48,
+        "chars": 182
+      },
+      {
+        "page": 49,
+        "chars": 263
+      },
+      {
+        "page": 50,
+        "chars": 0
+      },
+      {
+        "page": 51,
+        "chars": 0
+      },
+      {
+        "page": 52,
+        "chars": 0
+      },
+      {
+        "page": 53,
+        "chars": 9
+      },
+      {
+        "page": 54,
+        "chars": 925
+      },
+      {
+        "page": 55,
+        "chars": 889
+      },
+      {
+        "page": 56,
+        "chars": 955
+      },
+      {
+        "page": 57,
+        "chars": 945
+      },
+      {
+        "page": 58,
+        "chars": 920
+      },
+      {
+        "page": 59,
+        "chars": 813
+      },
+      {
+        "page": 60,
+        "chars": 783
+      },
+      {
+        "page": 61,
+        "chars": 1014
+      },
+      {
+        "page": 62,
+        "chars": 973
+      },
+      {
+        "page": 63,
+        "chars": 920
+      },
+      {
+        "page": 64,
+        "chars": 1016
+      },
+      {
+        "page": 65,
+        "chars": 859
+      },
+      {
+        "page": 66,
+        "chars": 980
+      },
+      {
+        "page": 67,
+        "chars": 830
+      },
+      {
+        "page": 68,
+        "chars": 928
+      },
+      {
+        "page": 69,
+        "chars": 708
+      },
+      {
+        "page": 70,
+        "chars": 4
+      },
+      {
+        "page": 71,
+        "chars": 0
+      },
+      {
+        "page": 72,
+        "chars": 92
+      },
+      {
+        "page": 73,
+        "chars": 87
+      },
+      {
+        "page": 74,
+        "chars": 0
+      },
+      {
+        "page": 75,
+        "chars": 179
+      },
+      {
+        "page": 76,
+        "chars": 62
+      },
+      {
+        "page": 77,
+        "chars": 551
+      },
+      {
+        "page": 78,
+        "chars": 10
+      },
+      {
+        "page": 79,
+        "chars": 0
+      },
+      {
+        "page": 80,
+        "chars": 324
+      },
+      {
+        "page": 81,
+        "chars": 893
+      },
+      {
+        "page": 82,
+        "chars": 149
+      },
+      {
+        "page": 83,
+        "chars": 295
+      },
+      {
+        "page": 84,
+        "chars": 673
+      },
+      {
+        "page": 85,
+        "chars": 269
+      },
+      {
+        "page": 86,
+        "chars": 4
+      },
+      {
+        "page": 87,
+        "chars": 0
+      },
+      {
+        "page": 88,
+        "chars": 697
+      },
+      {
+        "page": 89,
+        "chars": 300
+      },
+      {
+        "page": 90,
+        "chars": 4
+      },
+      {
+        "page": 91,
+        "chars": 0
+      },
+      {
+        "page": 92,
+        "chars": 627
+      },
+      {
+        "page": 93,
+        "chars": 863
+      },
+      {
+        "page": 94,
+        "chars": 118
+      },
+      {
+        "page": 95,
+        "chars": 365
+      },
+      {
+        "page": 96,
+        "chars": 731
+      },
+      {
+        "page": 97,
+        "chars": 10
+      },
+      {
+        "page": 98,
+        "chars": 746
+      },
+      {
+        "page": 99,
+        "chars": 99
+      },
+      {
+        "page": 100,
+        "chars": 0
+      },
+      {
+        "page": 101,
+        "chars": 697
+      },
+      {
+        "page": 102,
+        "chars": 744
+      },
+      {
+        "page": 103,
+        "chars": 25
+      },
+      {
+        "page": 104,
+        "chars": 4
+      },
+      {
+        "page": 105,
+        "chars": 736
+      },
+      {
+        "page": 106,
+        "chars": 32
+      },
+      {
+        "page": 107,
+        "chars": 4
+      },
+      {
+        "page": 108,
+        "chars": 717
+      },
+      {
+        "page": 109,
+        "chars": 25
+      },
+      {
+        "page": 110,
+        "chars": 0
+      },
+      {
+        "page": 111,
+        "chars": 886
+      },
+      {
+        "page": 112,
+        "chars": 646
+      },
+      {
+        "page": 113,
+        "chars": 685
+      },
+      {
+        "page": 114,
+        "chars": 523
+      },
+      {
+        "page": 115,
+        "chars": 25
+      },
+      {
+        "page": 116,
+        "chars": 272
+      },
+      {
+        "page": 117,
+        "chars": 228
+      },
+      {
+        "page": 118,
+        "chars": 190
+      },
+      {
+        "page": 119,
+        "chars": 472
+      },
+      {
+        "page": 120,
+        "chars": 108
+      },
+      {
+        "page": 121,
+        "chars": 524
+      },
+      {
+        "page": 122,
+        "chars": 22
+      }
+    ],
+    "source_pdf_display": "sources/raw-pdfs/货架管理三方API文档.pdf"
+  }
+]

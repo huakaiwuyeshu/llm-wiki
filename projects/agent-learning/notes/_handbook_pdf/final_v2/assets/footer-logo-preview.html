@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Footer Logo Preview</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7fa;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      color: #162033;
+    }
+    .page {
+      width: 920px;
+      height: 520px;
+      margin: 24px auto;
+      background: #fff;
+      box-shadow: 0 18px 50px rgba(22, 32, 51, .12);
+      position: relative;
+      overflow: hidden;
+    }
+    .content {
+      padding: 54px 72px;
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-family: Georgia, "Noto Serif SC", serif;
+      font-size: 34px;
+      letter-spacing: 0;
+    }
+    p {
+      width: 620px;
+      font-size: 18px;
+      line-height: 1.9;
+      color: #354255;
+    }
+    .rule {
+      height: 1px;
+      background: #d7e0e8;
+      margin-top: 28px;
+      width: 650px;
+    }
+    .footer {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      bottom: 34px;
+      height: 42px;
+      border-top: 1px solid #d7e0e8;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      color: #657384;
+      font-size: 12px;
+    }
+    .watermark {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      width: 118px;
+      opacity: .38;
+    }
+    .logo-card {
+      width: 920px;
+      margin: 24px auto 0;
+      padding: 24px 28px;
+      background: #fff;
+      box-sizing: border-box;
+      box-shadow: 0 18px 50px rgba(22, 32, 51, .10);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+    .logo-row img:first-child { width: 260px; }
+    .logo-row img:last-child {
+      width: 260px;
+      background: #f8fafc;
+      border: 1px solid #dce4ec;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .label {
+      margin-top: 14px;
+      color: #657384;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <section class="logo-card">
+    <div class="logo-row">
+      <img src="./footer-mascot-logo.svg" alt="full color logo" />
+      <img src="./footer-mascot-watermark.svg" alt="watermark logo" />
+    </div>
+    <div class="label">左：主 logo；右：页脚水印版</div>
+  </section>
+  <section class="page">
+    <div class="content">
+      <h1>企业业务 Agent 模块解析手册</h1>
+      <p>页脚水印应当存在感很轻，只作为文档识别符号，不抢正文和页码。当前示例按 118px 宽度、38% 透明度放置。</p>
+      <div class="rule"></div>
+    </div>
+    <img class="watermark" src="./footer-mascot-watermark.svg" alt="" />
+    <footer class="footer">
+      <span>从普通聊天机器人，到可控、可复盘、可持续沉淀的业务 Agent</span>
+      <span>3 / 26</span>
+    </footer>
+  </section>
+</body>
+</html>

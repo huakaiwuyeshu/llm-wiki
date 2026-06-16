@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手册第 3 页（改写成稿）· Agent 是怎么演进到业务 Agent 的</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15191E; --slate-700:#3a4654; --slate-500:#697686; --slate-300:#c3cbd5;
+    --line:#e6e3dc; --paper:#FBFAF7; --paper-elev:#FFFFFF;
+    --accent:#2546E0; --accent-soft:#eef1fe;
+    --pain:#B23A2E; --pain-soft:#fbf0ee;
+    --design:#2C7A52; --design-soft:#eef6f0;
+    --amber:#B9821E; --amber-soft:#fbf2e0;
+    --L-know:#2563EB; --L-know-soft:#eaf0fe;
+    --L-do:#2C7A52; --L-do-soft:#eaf5ee;
+    --L-good:#B9821E; --L-good-soft:#fbf2e0;
+    --bg:var(--paper); --surface:var(--paper-elev); --text:var(--ink);
+    --text-2:var(--slate-700); --text-3:var(--slate-500); --border:var(--line);
+    --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px;
+    --radius:14px; --maxw:960px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;padding:var(--s5) var(--s3);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;}
+  .serif{font-family:"Lora","PingFang SC","Microsoft YaHei",serif;}
+
+  /* 页眉:模拟手册页眉 + 页码 */
+  .pghead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:var(--s4);font-size:12px;color:var(--text-3);letter-spacing:.04em;}
+  .pghead .pg{font-family:"Lora",serif;font-weight:700;color:var(--slate-500);}
+
+  .sechead{margin-bottom:var(--s2);}
+  .sechead .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;}
+  .sechead h1{font-size:clamp(24px,4vw,34px);line-height:1.15;font-weight:800;letter-spacing:-.01em;}
+  .lead{margin-top:var(--s2);font-size:15px;color:var(--text-2);line-height:1.75;max-width:70ch;}
+  .lead b{color:var(--text);font-weight:700;}
+
+  .blocklabel{display:flex;align-items:baseline;gap:10px;margin:var(--s4) 0 var(--s2);}
+  .blocklabel .n{font-family:"Lora",serif;font-size:13px;color:var(--accent);font-weight:700;}
+  .blocklabel h2{font-size:18px;font-weight:700;}
+  .blocklabel .tip{font-size:12px;color:var(--text-3);margin-left:auto;font-weight:500;}
+
+  /* 三层框架 */
+  .layers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);}
+  .layer{border-radius:12px;padding:var(--s3);border:1px solid var(--border);background:var(--surface);border-top:4px solid;}
+  .layer.know{border-top-color:var(--L-know);} .layer.do{border-top-color:var(--L-do);} .layer.good{border-top-color:var(--L-good);}
+  .layer .q{font-size:12px;font-weight:700;margin-bottom:3px;}
+  .layer.know .q{color:var(--L-know);} .layer.do .q{color:var(--L-do);} .layer.good .q{color:var(--L-good);}
+  .layer .big{font-size:17px;font-weight:800;margin-bottom:8px;}
+  .layer .desc{font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:10px;}
+  .layer .chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;}
+  .layer.know .chip{background:var(--L-know-soft);color:var(--L-know);}
+  .layer.do .chip{background:var(--L-do-soft);color:var(--L-do);}
+  .layer.good .chip{background:var(--L-good-soft);color:var(--L-good);}
+  /* 四阶段(手册原图2 · 自主度阶梯) */
+  .stages4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:stretch;}
+  .st4{position:relative;border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:16px 14px;border-top:4px solid var(--slate-300);}
+  .st4:nth-child(2){border-top-color:#9bb0c9;} .st4:nth-child(3){border-top-color:#7d97b6;} .st4:nth-child(4){border-top-color:var(--accent);}
+  .st4 .step{font-family:"Lora",serif;font-size:11px;font-weight:700;color:var(--text-3);}
+  .st4 .nm4{font-size:15px;font-weight:800;margin:4px 0 6px;}
+  .st4 .cap4{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;}
+  .st4 .fit{font-size:12px;color:var(--text-2);line-height:1.5;}
+  .st4 .fit b{color:var(--text);font-weight:600;}
+  .stages4 .arrowwrap{display:none;}
+  .axisbar{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11.5px;color:var(--text-3);font-weight:600;}
+  .axisbar .track{flex:1;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--slate-300),var(--accent));}
+  .pickhere{margin-top:12px;padding:11px 14px;background:var(--accent-soft);border-radius:8px;font-size:12.5px;color:var(--accent);font-weight:600;line-height:1.55;}
+  .pickhere b{font-weight:800;}
+  /* 九阶段一行式时间轴 */
+  .evo{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden;}
+  .erow{display:flex;align-items:center;gap:12px;padding:11px var(--s3);border-bottom:1px solid var(--border);}
+  .erow:last-child{border-bottom:none;}
+  .erow .num{font-family:"Lora",serif;font-weight:700;font-size:14px;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .erow.pivot .num{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .erow .nm{font-weight:700;font-size:14.5px;width:148px;flex-shrink:0;}
+  .erow .nm .en{display:block;font-size:10.5px;color:var(--text-3);font-weight:500;}
+  .erow .fix{font-size:13px;color:var(--text-2);line-height:1.5;flex:1;}
+  .erow .fix b{color:var(--text);font-weight:600;}
+  .erow .lt{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;flex-shrink:0;}
+  .erow .lt.know{background:var(--L-know-soft);color:var(--L-know);}
+  .erow .lt.do{background:var(--L-do-soft);color:var(--L-do);}
+  .erow .lt.good{background:var(--L-good-soft);color:var(--L-good);}
+  .erow .lt.base{background:#f0f2f5;color:var(--slate-500);}
+  .erow .lt.form{background:#f1ecfb;color:#6f42c1;}
+  .erow .map{font-size:10.5px;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:2px 8px;border-radius:999px;flex-shrink:0;}
+
+  /* 桥接话术框 */
+  .bridge{background:var(--ink);color:#f5f3ee;border-radius:var(--radius);padding:var(--s4);margin:var(--s2) 0;}
+  .bridge .bt{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9fb0ff;font-weight:700;margin-bottom:14px;}
+  .bridge .twoaxis{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-bottom:16px;}
+  .bridge .ax{background:rgba(255,255,255,.06);border-radius:10px;padding:14px 16px;border-left:3px solid;}
+  .bridge .ax.a{border-left-color:#9fb0ff;} .bridge .ax.b{border-left-color:var(--L-good);}
+  .bridge .ax .axt{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+  .bridge .ax .axd{font-size:12.5px;color:#cfd4dc;line-height:1.55;}
+  .bridge .axt .lab{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+  .bridge .ax.a .lab{color:#9fb0ff;} .bridge .ax.b .lab{color:#e0b860;}
+  .bridge .key{font-size:14.5px;line-height:1.6;font-weight:500;}
+  .bridge .key b{color:#fff;font-weight:700;box-shadow:inset 0 -.5em 0 rgba(37,70,224,.45);}
+  .bridge .converge{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15);font-size:13.5px;color:#cfd4dc;line-height:1.6;}
+  .bridge .converge b{color:#9fb0ff;font-weight:700;}
+
+  /* 选型:为什么混合架构 */
+  .pick{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden;}
+  .pick table{width:100%;border-collapse:collapse;}
+  .pick th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);font-weight:700;text-align:left;padding:11px var(--s3);background:#fdfcfa;border-bottom:1px solid var(--border);}
+  .pick td{font-size:13px;color:var(--text-2);padding:11px var(--s3);border-bottom:1px solid var(--border);line-height:1.5;vertical-align:top;}
+  .pick tr:last-child td{border-bottom:none;}
+  .pick td.feat{font-weight:600;color:var(--text);width:30%;}
+  .pick td.mod{color:var(--design);font-weight:600;white-space:nowrap;}
+
+  .closing{background:var(--accent-soft);border-radius:12px;padding:var(--s3) var(--s4);margin-top:var(--s3);font-size:14.5px;color:var(--accent);font-weight:600;line-height:1.6;}
+  /* 控制权钟摆:能力演进 → 混合架构 的暗线桥 */
+  .pendulum{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:var(--s3) var(--s4);}
+  .pbar{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:10px;}
+  .pnode{border-radius:10px;padding:14px;font-size:12.5px;line-height:1.5;border:1px solid var(--border);}
+  .pnode b{display:block;font-size:13.5px;margin-bottom:4px;font-weight:700;}
+  .pnode.p1{background:#f6f5f1;} .pnode.p1 b{color:var(--slate-700);}
+  .pnode.p2{background:var(--pain-soft);} .pnode.p2 b{color:var(--pain);}
+  .pnode.p3{background:var(--design-soft);} .pnode.p3 b{color:var(--design);}
+  .pmid{display:flex;align-items:center;justify-content:center;color:var(--slate-300);font-size:18px;font-weight:700;}
+  .pconverge{margin-top:14px;background:var(--accent-soft);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--accent);font-weight:600;line-height:1.55;}
+  .pconverge b{font-weight:800;}
+  /* 佐证块:视觉上从属于结论,而非平级新章节 */
+  .evidence{border-left:4px solid var(--accent);padding-left:var(--s3);margin-top:var(--s2);}
+  .evbadge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:5px 12px;border-radius:999px;margin-bottom:12px;}
+  .evbadge::before{content:"↑";font-weight:800;}
+  .evlead{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:var(--s2);max-width:68ch;}
+  .evlead b{color:var(--text);font-weight:700;}
+  .evtail{margin-top:12px;font-size:12.5px;color:var(--text-3);line-height:1.6;}
+  .evtail b{color:var(--design);font-weight:700;}
+
+  .editnote{margin-top:var(--s4);padding:14px 18px;background:#faf8f3;border:1px dashed var(--amber);border-radius:10px;font-size:12.5px;color:var(--text-2);line-height:1.7;}
+  .editnote b{color:var(--amber);}
+
+  .foot{text-align:center;color:var(--text-3);font-size:12px;margin-top:var(--s5);padding-top:var(--s3);border-top:1px solid var(--border);}
+  .foot .credit{display:inline-block;margin-top:6px;font-size:11px;color:var(--slate-300);}
+
+  @media (max-width:760px){
+    body{padding:var(--s3) var(--s2);}
+    .layers{grid-template-columns:1fr;}
+    .bridge .twoaxis{grid-template-columns:1fr;}
+    .erow{flex-wrap:wrap;gap:8px;} .erow .nm{width:auto;} .erow .fix{flex-basis:100%;order:5;}
+    .pick td.feat{width:auto;}
+    .pbar{grid-template-columns:1fr;} .pmid{transform:rotate(90deg);padding:2px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="pghead"><span>Agent 模块解析 · 企业业务 Agent</span><span class="pg">— 3 —</span></div>
+
+  <!-- 块1:标题 + 导语 -->
+  <header class="sechead">
+    <div class="kicker">第三页 · 改写成稿</div>
+    <h1>Agent 是怎么演进到<span class="serif">业务 Agent</span> 的</h1>
+    <p class="lead">先破一个最常见的误解:<b>一个固定流程,不会因为中间接了大模型,就自动变成智能体;会调用工具,也不等于就是 Agent。</b>Agent 不是一个固定形态的产品,而是它从早期的工具调用,一步步长出记忆、检索、动手、编排、协作、护甲等能力,最终成为可以沉淀经验的业务系统。<br><b>读法很简单:跟着下面这条主线走一遍 —— 看每一步,是被上一代的什么短板逼出来的。走完,你自然会看懂它为什么落到「混合架构」。</b></p>
+  </header>
+
+  <!-- 块1:九阶段主线(主叙事,放最前 · 跟着走一遍) -->
+  <div class="blocklabel"><span class="n">01</span><h2>主线:九步演进,每一步都在补上一代的短板</h2><span class="tip">★ 枢纽 · 从上往下读 · 右侧 = 对应手册模块</span></div>
+  <div class="evo">
+    <div class="erow"><span class="num">1</span><span class="nm">LLM<span class="en">万能百科</span></span><span class="fix">起点:能理解和生成,但<b>无记性、知识静态、不会动手</b> —— 后面每一步都在补它的某条短板。</span><span class="lt base">地基</span></div>
+    <div class="erow"><span class="num">2</span><span class="nm">记忆<span class="en">Memory</span></span><span class="fix">补「每次调用都失忆」—— 短期上下文 + 长期持久化,让对话和经验连续。</span><span class="lt know">知识层</span><span class="map">手册 #10</span></div>
+    <div class="erow"><span class="num">3</span><span class="nm">RAG<span class="en">检索增强</span></span><span class="fix">补「不懂私有业务、还会编」—— 先检索再回答,没依据就明说未找到。</span><span class="lt know">知识层</span><span class="map">手册 #7</span></div>
+    <div class="erow pivot"><span class="num">4</span><span class="nm">Function Call<span class="en">& MCP</span></span><span class="fix">★ 补「只会说不会做」—— LLM 输出调用指令、代码负责执行。<b>决策与执行分离</b>,是安全可控的根。</span><span class="lt do">能力层</span><span class="map">手册 #8</span></div>
+    <div class="erow pivot"><span class="num">5</span><span class="nm">Agent Loop<span class="en">ReAct</span></span><span class="fix">★ 补「多步任务谁来串」—— 想→做→看→再决定的循环。<b>Agent 不是一种产品形态,而是一种控制策略</b> —— 就是这个循环本身。</span><span class="lt good">质量层</span><span class="map">主链路</span></div>
+    <div class="erow"><span class="num">6</span><span class="nm">Skill<span class="en">能力包</span></span><span class="fix">补「工具一多就选不准」—— 渐进式加载 SOP + 工具,按手册操作而非临场猜。</span><span class="lt do">能力层</span><span class="map">手册 #6</span></div>
+    <div class="erow"><span class="num">7</span><span class="nm">Multi-Agent<span class="en">多智能体</span></span><span class="fix">补「单个脑子带不动」—— 拆成专家协作;但成本翻倍,不到必要不拆。</span><span class="lt good">质量层</span><span class="map">手册 #6</span></div>
+    <div class="erow pivot"><span class="num">8</span><span class="nm">Harness<span class="en">运行时护甲</span></span><span class="fix">★ 补「上线就崩」—— 容错、限流、工具治理、人工审核、可观测。<b>从「能跑」到「能用」的分水岭</b>。</span><span class="lt good">质量层</span><span class="map">#8/#11/#12</span></div>
+    <div class="erow"><span class="num">9</span><span class="nm">Claw<span class="en">本地端</span></span><span class="fix">部署形态演进 —— Agent 跑到你电脑上,直接动手并验证,闭合决策-执行-验证。</span><span class="lt form">形态</span></div>
+  </div>
+
+  <!-- 块2:三层框架(走完路,再看地图 · 归纳小结) -->
+  <div class="blocklabel"><span class="n">02</span><h2>归纳:这九步,其实在解决三个递进的问题</h2><span class="tip">走完上面这条线,可以这样记住它</span></div>
+  <div class="layers">
+    <div class="layer know">
+      <div class="q">第一层 · 知道什么</div>
+      <div class="big">知识</div>
+      <div class="desc">突破「只知道训练数据」—— 记得住对话,也查得到实时与私有信息。</div>
+      <div class="chips"><span class="chip">② 记忆</span><span class="chip">③ RAG</span></div>
+    </div>
+    <div class="layer do">
+      <div class="q">第二层 · 能做什么</div>
+      <div class="big">能力</div>
+      <div class="desc">从「只会说」到「能动手」—— 会调工具,工具多了也能精准、高效地用。</div>
+      <div class="chips"><span class="chip">④ Function Call & MCP</span><span class="chip">⑥ Skill</span></div>
+    </div>
+    <div class="layer good">
+      <div class="q">第三层 · 怎么做得好</div>
+      <div class="big">质量</div>
+      <div class="desc">从「能跑」到「能用」—— 会编排多步、能协作,还能在真实世界稳定不崩。</div>
+      <div class="chips"><span class="chip">⑤ Agent Loop</span><span class="chip">⑦ Multi-Agent</span><span class="chip">⑧ Harness</span></div>
+    </div>
+  </div>
+
+  <!-- 块3:换个粗看法 = 四阶段选型视角 + 桥接 -->
+  <div class="blocklabel"><span class="n">03</span><h2>换个粗看法:按「自主度」分四档,帮你选型</h2><span class="tip">手册原本的演进图 · 上面九步是"为什么",这四档是"该用到哪一档"</span></div>
+  <div class="stages4">
+    <div class="st4"><div class="step">第 1 档</div><div class="nm4">早期 Agent</div><div class="cap4">聊天 + 工具调用</div><div class="fit">适合<b>短链路任务</b> —— 问一句、调个工具、答一句。</div></div>
+    <div class="st4"><div class="step">第 2 档</div><div class="nm4">工作流 Agent</div><div class="cap4">流程编排</div><div class="fit">适合<b>企业稳定流程</b> —— 步骤已知,按图执行,可控。</div></div>
+    <div class="st4"><div class="step">第 3 档</div><div class="nm4">自主 Agent</div><div class="cap4">规划 + 执行</div><div class="fit">适合<b>开放复杂任务</b> —— 自己拆解规划,灵活但要兜底。</div></div>
+    <div class="st4"><div class="step">第 4 档</div><div class="nm4">自进化 Agent</div><div class="cap4">Skill + Memory</div><div class="fit">能<b>沉淀经验成资产</b> —— 越用越懂业务,持续变强。</div></div>
+  </div>
+  <div class="axisbar"><span>自主度 低</span><span class="track"></span><span>高</span></div>
+  <div class="bridge" style="margin-top:var(--s3);">
+    <div class="bt">两张图对不上?是排法不同,不是矛盾</div>
+    <p class="key" style="margin-bottom:14px;">同样是「记忆」「Skill」,在九步里靠前(<b>按能力补齐的先后</b>排),在四档里却靠后(<b>按自主度高低</b>排)。<b>轴不一样,位置自然会变 —— 别纠结顺序,看它解决什么问题。</b></p>
+    <div class="converge">两种看法只是<b>排法不同,不冲突</b>。但它们都只回答了"能力越来越多" —— 还没回答最关键的一问:<b style="color:#fff">这些能力的控制权,到底该归谁?</b>这才是决定架构的那条线 ↓</div>
+  </div>
+
+  <!-- 块4:控制权钟摆(能力演进 → 混合架构 的暗线桥) -->
+  <div class="blocklabel"><span class="n">04</span><h2>真正决定架构的暗线:控制权的钟摆</h2><span class="tip">★ 这才是"为什么混合架构"的根</span></div>
+  <div class="pendulum">
+    <div class="pbar">
+      <div class="pnode p1"><b>早期 · 全用规则</b>流程写死,死板、不灵活,稍微变一点就得改代码。</div>
+      <div class="pmid">→</div>
+      <div class="pnode p2"><b>自主 Agent · 全交 LLM</b>把控制权全给模型,灵活了,但<b>失控、会跑偏、上线就崩</b>。业务最怕的不是系统不够聪明,而是<b>系统自作聪明</b>。</div>
+      <div class="pmid">→</div>
+      <div class="pnode p3"><b>工程实践 · 收回控制权</b>把确定的部分用代码/流程固化,只在需要判断处放 LLM。可控、可复盘。</div>
+    </div>
+    <div class="pconverge">钟摆最终收敛在 <b>「Workflow 负责边界,Agent 负责弹性」</b> —— Workflow 规定哪些步骤必须走、哪些权限不能越、哪些结果必须审核;Agent 在允许的范围内处理不确定性。这就是<b>混合架构</b>。<br>所以它不是某种偏好,而是整个行业试错之后的<b>收敛终点</b>:能力可以一直长(前面九步),但控制权必须留在确定性工程手里。</div>
+  </div>
+
+  <!-- 块5:佐证(不是新章节,是上面结论的证据 + 通往后文模块的入口) -->
+  <div class="evidence">
+    <div class="evbadge">佐证 · 印证上面的结论</div>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:8px;">为什么我们也选混合架构</h2>
+    <p class="evlead">钟摆讲的是<b>行业为什么都走向混合架构</b>(通用规律)。再看一眼<b>我们自己为什么也该选它</b>:API 接入、联调排查、单量分析,<b>不是开放闲聊,而是高频、确定、可审核的流程</b>。它的每一条业务特征,恰好都对应混合架构里的一块 —— <b>这正是"把模型放进可控流程"在我们这儿的具体长相</b>。</p>
+  <div class="pick">
+    <table>
+      <thead><tr><th>业务特征</th><th>因此 Agent 需要</th><th>对应模块（后文详解）</th></tr></thead>
+      <tbody>
+        <tr><td class="feat">流程顺序稳定</td><td>不要每次重想流程</td><td class="mod">Workflow</td></tr>
+        <tr><td class="feat">字段规则明确</td><td>判断可校验</td><td class="mod">Schema + Validator</td></tr>
+        <tr><td class="feat">问题高度重复</td><td>复用专家经验</td><td class="mod">Skill + 知识库</td></tr>
+        <tr><td class="feat">任务多轮推进</td><td>知道走到哪一步</td><td class="mod">Task State</td></tr>
+        <tr><td class="feat">凭证敏感、上线敏感</td><td>必须人工确认</td><td class="mod">Audit + 人工审核</td></tr>
+      </tbody>
+    </table>
+  </div>
+    <p class="evtail"><b>承上启下:</b>右列这几个模块,就是手册后面要逐个拆开讲的东西 —— 演进史告诉你它们<b>为什么存在</b>,接下来的章节告诉你它们<b>具体怎么做</b>。</p>
+  </div>
+  <div class="closing">讲给业务同学的一句话:Agent 不是越自主越好。对企业业务来说,更重要的是把大模型放进可控流程里 —— LLM 负责理解和表达,Workflow / Schema / Skill / Task State / Memory / Audit 和人工审核负责稳定、可控、可复盘。</div>
+
+  <!-- 给你的落地注记 -->
+  <div class="editnote">
+    <b>给你的落地注记(不进手册):</b>逻辑链:<b>01 九阶段主线</b>(能力怎么一块块长出来)→ <b>02 三层框架</b>(走完归纳,帮记忆)→ <b>03 四阶段</b>(手册原图2,粗粒度选型 + 化解"两张图对不上")→ <b>04 控制权钟摆</b>(★关键新增:能力演进只讲了"能做什么",钟摆才回答"控制权归谁",这是"为什么混合架构"的真正支撑)→ <b>佐证块</b>(钟摆给通用规律,佐证给"我们业务也需要它")。上一版的漏洞是结论"混合架构"空降——因为只搬了能力演进、漏了控制权钟摆这条暗线,04 就是补这座桥。若 PDF 装不下,可按 <b>01-04 演进与论点 + 佐证与落地</b> 拆两页。另:本版把【老傅1024】视频里的几句金句融进了现有文案(导语"接了大模型≠智能体"、⑤"Agent 是控制策略非产品形态"、钟摆"系统自作聪明"/"Workflow 控边界 + Agent 提弹性"),未新增独立块,以免打断主线节奏。
+  </div>
+
+  <div class="foot">
+    手册第 3 页改写成稿 · 替换原「图 2 四阶段演进」 · 体系对齐《从0到1搭建 Agent》(阿里技术)<br>
+    <span class="credit">设计应用 UI/UX Pro Max skill · Swiss/Corporate Minimal · WCAG AA · 升级替换 + 桥接话术</span>
+  </div>
+
+</div>
+</body>
+</html>

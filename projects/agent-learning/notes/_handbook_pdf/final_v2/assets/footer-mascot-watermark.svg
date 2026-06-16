@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" role="img" aria-label="footer mascot watermark logo">
+  <defs>
+    <style>
+      .stroke{fill:none;stroke:#2d5f8a;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+      .thin{fill:none;stroke:#2d5f8a;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+      .fill{fill:#2d5f8a}
+      .soft{fill:#8fa9bd}
+      .pale{fill:#dce8f0}
+    </style>
+  </defs>
+  <g opacity=".5" transform="translate(28 16)">
+    <path class="thin" d="M29 107c-20-8-25-28-15-44"/>
+    <path class="fill" d="M44 37 24 15c-3-3-8-1-8 4v45c0 5 5 8 10 6l24-11z"/>
+    <path class="pale" d="M28 30 20 22v31c0 3 3 5 6 4l14-6z"/>
+    <path class="fill" d="M132 37 153 15c3-3 8-1 8 4v45c0 5-5 8-10 6l-25-11z"/>
+    <path class="pale" d="M148 30l8-8v31c0 3-3 5-6 4l-14-6z"/>
+    <ellipse class="fill" cx="88" cy="82" rx="66" ry="69"/>
+    <ellipse fill="#f7fbfd" cx="61" cy="73" rx="23" ry="36"/>
+    <ellipse fill="#f7fbfd" cx="113" cy="73" rx="23" ry="36"/>
+    <ellipse fill="#2d5f8a" cx="62" cy="74" rx="13" ry="25"/>
+    <ellipse fill="#2d5f8a" cx="113" cy="74" rx="13" ry="25"/>
+    <path class="thin" d="M83 107q5 6 11 0"/>
+    <path class="thin" d="M70 121v18M88 119v22M106 121v18"/>
+    <path class="fill" d="M20 110c-16 2-21 31-1 38 11 4 23-3 31-15-15-1-25-9-30-23z"/>
+    <g transform="translate(66 -7)">
+      <circle class="fill" cx="18" cy="22" r="19"/>
+      <circle class="fill" cx="50" cy="22" r="19"/>
+      <path class="fill" d="M16 7 20 0l7 8M48 7 52 0l7 8"/>
+      <circle fill="#f7fbfd" cx="18" cy="22" r="10"/>
+      <circle fill="#f7fbfd" cx="50" cy="22" r="10"/>
+      <circle class="fill" cx="18" cy="22" r="5"/>
+      <circle class="fill" cx="50" cy="22" r="5"/>
+      <path fill="#f7fbfd" d="M34 27l-6 6h12z"/>
+    </g>
+  </g>
+  <g opacity=".5" transform="translate(228 35)">
+    <ellipse class="soft" cx="64" cy="57" rx="49" ry="54"/>
+    <path class="thin" d="M20 62c-15-3-17 21-1 19M108 62c15-3 17 21 1 19"/>
+    <circle class="fill" cx="45" cy="44" r="7"/>
+    <circle class="fill" cx="82" cy="44" r="7"/>
+    <path class="thin" d="M58 55q6-9 13 0"/>
+    <path fill="#f7fbfd" d="M34 78c9-9 17-14 30-14s22 5 31 14c-4 21-14 30-31 30S38 99 34 78z"/>
+    <path class="thin" d="M36 75c-10 5-14 20-7 29M92 75c10 5 14 20 7 29"/>
+  </g>
+  <path class="stroke" opacity=".45" d="M187 130h28M205 118v24"/>
+</svg>
