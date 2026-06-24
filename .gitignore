@@ -1,2 +1,5 @@
 .claude/settings.local.json
 **/.claude/settings.local.json
+__pycache__/
+*.pyc
+projects/api-infra/notes/update-requests/

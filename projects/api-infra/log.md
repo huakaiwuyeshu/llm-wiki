@@ -2,6 +2,10 @@
 
 > 新日志写在最上方。格式：`## [YYYY-MM-DD] <操作> | <标题>`
 
+## [2026-06-24] patch | 补充“平台不存在”报错说明
+
+在 API 对接 FAQ 中补充接口返回“平台不存在”的处理说明：通常需检查请求字段内的平台标识是否填写错误或不存在，并联系对接商务/产品确认处理；同步更新 agent-demo FAQ 导出。
+
 ## [2026-06-16] ingest | 摄入 10 份 API PDF 并生成 agent-demo 知识包
 
 抽取 `sources/raw-pdfs/` 下 10 份 API PDF 到 `sources/extracted-md/`，新建 10 篇 `wiki/sources/` 来源笔记、8 篇 `wiki/concepts/` 概念页、1 篇 FAQ 和 3 篇 SOP，并生成 `exports/agent-demo/` 下的 JSON 知识包。

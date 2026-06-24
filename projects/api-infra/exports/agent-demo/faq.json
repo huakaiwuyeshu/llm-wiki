@@ -54,6 +54,12 @@
     "source": "wiki/faq/api-integration-faq.md"
   },
   {
+    "id": "faq-platform-not-exist",
+    "question": "接口返回“平台不存在”怎么办？",
+    "answer": "接口返回报错“平台不存在”时，可能是接口请求字段内的平台标识填写错误，或者平台标识不存在，需要联系对接商务/产品确认处理。",
+    "source": "wiki/faq/api-integration-faq.md"
+  },
+  {
     "id": "faq-discount-renewal",
     "question": "特价游戏支持续租吗？",
     "answer": "不支持。FAQ 文档列出的特价游戏列表注明特价游戏不支持续租。",

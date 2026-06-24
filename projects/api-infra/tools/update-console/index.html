@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LLM Wiki 更新入口</title>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <style>
+      :root {
+        --paper: #f5f0e6;
+        --panel: #fffdf7;
+        --ink: #151915;
+        --muted: #676b60;
+        --line: #d8cebc;
+        --line-strong: #b8aa96;
+        --green: #245d4a;
+        --green-soft: #dce9dc;
+        --blue: #2d5368;
+        --amber: #a66324;
+        --white: #fffaf0;
+        --shadow: 0 18px 46px rgba(35, 29, 16, 0.12);
+        --radius: 8px;
+        --sans: "Aptos", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+        --mono: "Cascadia Mono", Consolas, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(90deg, rgba(21, 25, 21, 0.05) 1px, transparent 1px),
+          linear-gradient(rgba(21, 25, 21, 0.035) 1px, transparent 1px),
+          var(--paper);
+        background-size: 32px 32px;
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 250, 240, 0.9);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--ink);
+        border-radius: var(--radius);
+        display: grid;
+        place-items: center;
+        background: var(--green);
+        color: var(--white);
+        box-shadow: 4px 4px 0 var(--ink);
+        flex: 0 0 auto;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 20px;
+        line-height: 1.12;
+      }
+
+      .subline {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .status-strip {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        background: rgba(255, 253, 247, 0.84);
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .pill strong {
+        color: var(--ink);
+      }
+
+      .workspace {
+        width: 100%;
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 22px;
+        display: grid;
+        grid-template-columns: minmax(360px, 620px) minmax(320px, 1fr);
+        gap: 18px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 253, 247, 0.95);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-head {
+        padding: 17px 17px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .panel-title {
+        font-size: 15px;
+        font-weight: 850;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .panel-body {
+        padding: 17px;
+      }
+
+      .form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      label {
+        font-size: 12px;
+        font-weight: 780;
+        color: #343830;
+      }
+
+      input[type="text"],
+      textarea,
+      select {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: var(--white);
+        color: var(--ink);
+        outline: none;
+      }
+
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+        line-height: 1.58;
+      }
+
+      input[type="text"]:focus,
+      textarea:focus,
+      select:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(36, 93, 74, 0.14);
+      }
+
+      .behaviors {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .behaviors input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .behavior {
+        min-height: 86px;
+        padding: 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: #f8f3ea;
+        display: grid;
+        align-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+        transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+      }
+
+      .behavior b {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+      }
+
+      .behavior span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .behaviors input:checked + .behavior {
+        background: var(--green);
+        color: var(--white);
+        border-color: var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+
+      .behaviors input:checked + .behavior span {
+        color: rgba(255, 250, 240, 0.82);
+      }
+
+      .dropzone {
+        border: 1.5px dashed var(--line-strong);
+        border-radius: var(--radius);
+        background: #f7f2e8;
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .dropzone.dragover {
+        border-color: var(--green);
+        background: var(--green-soft);
+      }
+
+      .drop-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .drop-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .drop-meta {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .file-list {
+        display: grid;
+        gap: 6px;
+        max-height: 110px;
+        overflow: auto;
+      }
+
+      .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 9px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--panel);
+        font-size: 12px;
+      }
+
+      .file-item span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      details {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(244, 240, 231, 0.58);
+      }
+
+      summary {
+        cursor: pointer;
+        padding: 11px 12px;
+        font-size: 13px;
+        font-weight: 780;
+      }
+
+      .advanced {
+        padding: 0 12px 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .check input {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--green);
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        min-height: 42px;
+        padding: 0 13px;
+        border: 1px solid var(--ink);
+        border-radius: var(--radius);
+        background: var(--panel);
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        font-weight: 820;
+        transition: transform 140ms ease, box-shadow 140ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 3px 3px 0 var(--ink);
+      }
+
+      .btn.primary {
+        background: var(--green);
+        color: var(--white);
+      }
+
+      .btn.blue {
+        background: var(--blue);
+        color: var(--white);
+      }
+
+      .btn.ghost {
+        border-color: var(--line-strong);
+        color: var(--muted);
+        background: transparent;
+      }
+
+      .btn.small {
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .right-stack {
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
+      .example {
+        display: grid;
+        gap: 10px;
+      }
+
+      .example-card {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f8f3ea;
+        cursor: pointer;
+      }
+
+      .example-card b {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 13px;
+      }
+
+      .example-card span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .plan-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .plan-item {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 9px;
+        align-items: start;
+        padding: 9px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+      }
+
+      .plan-index {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--ink);
+        color: var(--white);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .plan-copy {
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .preview {
+        min-height: 260px;
+        max-height: 420px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        padding: 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: #171a16;
+        color: #efe8d9;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.58;
+      }
+
+      .request-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .request-item {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+      }
+
+      .request-item b {
+        display: block;
+        font-size: 13px;
+      }
+
+      .request-item span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        max-width: min(430px, calc(100vw - 36px));
+        padding: 12px 14px;
+        border: 1px solid var(--ink);
+        border-radius: var(--radius);
+        background: var(--ink);
+        color: var(--white);
+        box-shadow: var(--shadow);
+        transform: translateY(18px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+        z-index: 30;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 980px) {
+        .workspace {
+          grid-template-columns: 1fr;
+          padding: 14px;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          padding: 14px;
+        }
+
+        .status-strip {
+          justify-content: flex-start;
+        }
+
+        .behaviors,
+        .advanced {
+          grid-template-columns: 1fr;
+        }
+
+        textarea {
+          min-height: 150px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark"><i data-lucide="library-big"></i></div>
+          <div>
+            <h1>LLM Wiki 更新入口</h1>
+            <div class="subline">只填文档、行为、内容；检索和落库由 Codex 处理</div>
+          </div>
+        </div>
+        <div class="status-strip">
+          <span class="pill"><i data-lucide="folder"></i><strong id="projectName">api-infra</strong></span>
+          <span class="pill"><i data-lucide="file-text"></i><strong id="wikiCount">--</strong> wiki</span>
+          <span class="pill"><i data-lucide="database"></i><strong id="recordCount">--</strong> records</span>
+          <span class="pill"><i data-lucide="clock-3"></i><strong id="serverState">连接中</strong></span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">告诉 Codex 要做什么</h2>
+            <span class="hint" id="draftState">草稿已启用</span>
+          </div>
+          <div class="panel-body">
+            <form class="form" id="requestForm">
+              <div class="field">
+                <label for="documentName">文档名称</label>
+                <input
+                  id="documentName"
+                  name="document_name"
+                  type="text"
+                  list="documentSuggestions"
+                  placeholder="例：API对接FAQ整理、货架共享第三方API接口文档"
+                  autocomplete="off"
+                />
+                <datalist id="documentSuggestions"></datalist>
+                <div class="hint">写大概名字也可以，我会自己检索匹配。</div>
+              </div>
+
+              <div class="field">
+                <label>行为</label>
+                <div class="behaviors">
+                  <input type="radio" name="behavior" id="behaviorUpdate" value="update_existing" checked />
+                  <label class="behavior" for="behaviorUpdate">
+                    <b><i data-lucide="square-pen"></i>存量更新</b>
+                    <span>修改已有文档里的旧口径、错误说明或规则。</span>
+                  </label>
+                  <input type="radio" name="behavior" id="behaviorAppend" value="append_note" />
+                  <label class="behavior" for="behaviorAppend">
+                    <b><i data-lucide="plus"></i>新增补充</b>
+                    <span>给已有文档新增一句说明、FAQ 或注意事项。</span>
+                  </label>
+                  <input type="radio" name="behavior" id="behaviorFile" value="new_file" />
+                  <label class="behavior" for="behaviorFile">
+                    <b><i data-lucide="upload"></i>新增文件</b>
+                    <span>上传新 PDF、Markdown 或其他资料并纳入知识库。</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="changeText">行为内容</label>
+                <textarea
+                  id="changeText"
+                  name="change_text"
+                  placeholder="例：新增第16条：接口返回报错“平台不存在”，可能是请求字段内的平台标识填写错误，或者平台标识不存在，需要联系对接商务/产品确认处理。"
+                ></textarea>
+              </div>
+
+              <div class="field">
+                <label>附件</label>
+                <div class="dropzone" id="dropzone">
+                  <div class="drop-row">
+                    <div>
+                      <div class="drop-title">如果是新增文件，把资料拖进来或点选择</div>
+                      <div class="drop-meta">补充/修改没有附件也可以直接提交</div>
+                    </div>
+                    <button class="btn small" type="button" id="chooseFiles"><i data-lucide="paperclip"></i>选择</button>
+                  </div>
+                  <input id="fileInput" type="file" multiple hidden />
+                  <div class="file-list" id="fileList"></div>
+                </div>
+              </div>
+
+              <details>
+                <summary>可选：背景和处理偏好</summary>
+                <div class="advanced">
+                  <div class="field" style="grid-column: 1 / -1">
+                    <label for="sourceNote">来源或背景</label>
+                    <textarea id="sourceNote" name="source_note" style="min-height: 88px" placeholder="例：来自商务对接群确认；希望 demo 问到这个错误时能命中。"></textarea>
+                  </div>
+                  <label class="check"><input id="syncExports" type="checkbox" checked />处理后同步 demo 可检索内容</label>
+                  <label class="check"><input id="writeLog" type="checkbox" checked />业务口径变化时写入日志</label>
+                </div>
+              </details>
+
+              <div class="button-row">
+                <button class="btn primary" type="submit"><i data-lucide="send"></i>保存请求</button>
+                <button class="btn blue" type="button" id="copyPrompt"><i data-lucide="copy"></i>复制给 Codex</button>
+                <button class="btn ghost" type="button" id="resetDraft"><i data-lucide="rotate-ccw"></i>清空</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="right-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">你可以这样写</h2>
+              <span class="hint">点一下可填入示例</span>
+            </div>
+            <div class="panel-body example">
+              <div class="example-card" data-example="append">
+                <b>补一句 FAQ</b>
+                <span>文档：API对接FAQ整理；行为：新增补充；内容：新增第16条...</span>
+              </div>
+              <div class="example-card" data-example="update">
+                <b>改已有规则</b>
+                <span>文档：签名规则；行为：存量更新；内容：把 timestamp 说明改成秒级 Unix 时间戳...</span>
+              </div>
+              <div class="example-card" data-example="file">
+                <b>传新资料</b>
+                <span>文档：新版回调接口说明；行为：新增文件；内容：请摄入这份 PDF 并更新 demo...</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Codex 会怎么处理</h2>
+              <span class="hint" id="behaviorLabel">存量更新</span>
+            </div>
+            <div class="panel-body">
+              <div class="plan-list" id="planList"></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">生成的请求</h2>
+              <button class="btn small" type="button" id="downloadRequest"><i data-lucide="download"></i>下载</button>
+            </div>
+            <div class="panel-body">
+              <pre class="preview" id="promptPreview"></pre>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">最近请求</h2>
+              <span class="hint" id="requestCount">--</span>
+            </div>
+            <div class="panel-body">
+              <div class="request-list" id="recentRequests"></div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const form = document.querySelector("#requestForm");
+      const fileInput = document.querySelector("#fileInput");
+      const fileList = document.querySelector("#fileList");
+      const dropzone = document.querySelector("#dropzone");
+      const toast = document.querySelector("#toast");
+      const isStaticPage = location.hostname.endsWith("github.io") || location.protocol === "file:";
+      let selectedFiles = [];
+      let saveTimer = null;
+      const defaultDocuments = [
+        "API对接FAQ整理",
+        "API对接流程",
+        "API新续租完整说明",
+        "iOS API接口服务接入文档",
+        "PC端游SDK说明",
+        "安卓上号 SDK 接入文档",
+        "货架共享第三方API接口文档",
+        "货架管理三方API文档",
+        "三方标准号池方案",
+        "三方渠道整理",
+        "API鉴权与签名",
+        "回调与重试",
+        "签名失败排查 SOP",
+        "回调失败排查 SOP",
+        "新续租排查 SOP",
+      ];
+
+      const behaviorMeta = {
+        update_existing: {
+          label: "存量更新",
+          changeType: "revise",
+          plan: [
+            "先用文档名称和内容关键词在 api-infra 内检索匹配文件。",
+            "判断旧口径位于来源笔记、FAQ、概念页、SOP 还是导出包。",
+            "只改必要位置，并避免重跑会覆盖手工内容的整包脚本。",
+            "校验 JSON，重建搜索索引，必要时补日志。",
+          ],
+        },
+        append_note: {
+          label: "新增补充",
+          changeType: "patch",
+          plan: [
+            "先定位最贴近的原文档和整理后的 wiki 页面。",
+            "把补充内容改写成可检索、可问答的知识条目。",
+            "如果会影响 demo 回答，同步更新对应 exports JSON。",
+            "重建搜索索引，必要时补日志。",
+          ],
+        },
+        new_file: {
+          label: "新增文件",
+          changeType: "new_document",
+          plan: [
+            "先检查附件是否属于 API 基础设施资料。",
+            "把原始资料保存进 sources，并抽取成可读文本。",
+            "生成来源笔记，再沉淀到 FAQ、概念页或 SOP。",
+            "更新入口、manifest、demo 导出和搜索索引。",
+          ],
+        },
+      };
+
+      const examples = {
+        append: {
+          behavior: "append_note",
+          document_name: "API对接FAQ整理",
+          change_text: "新增第16条：接口返回报错“平台不存在”，可能是因为接口请求字段内的平台标识填写错误，或者平台标识不存在，需要联系对接商务/产品去确认处理。",
+          source_note: "希望 demo 在用户问“平台不存在怎么办”时命中。",
+        },
+        update: {
+          behavior: "update_existing",
+          document_name: "API鉴权与签名",
+          change_text: "把 timestamp 的说明统一为秒级 Unix 时间戳，并提醒不要传毫秒级时间戳。",
+          source_note: "这是对已有签名排查口径的修正。",
+        },
+        file: {
+          behavior: "new_file",
+          document_name: "新版回调接口说明",
+          change_text: "请摄入上传的新资料，并判断是否需要新增 FAQ、SOP 或 demo 导出。",
+          source_note: "这是一份新资料，优先保证 agent-demo 可检索。",
+        },
+      };
+
+      function selectedBehavior() {
+        return new FormData(form).get("behavior") || "update_existing";
+      }
+
+      function currentPayload() {
+        const behavior = selectedBehavior();
+        const meta = behaviorMeta[behavior];
+        const documentName = document.querySelector("#documentName").value.trim();
+        return {
+          project: "api-infra",
+          behavior,
+          behavior_label: meta.label,
+          document_name: documentName,
+          change_type: meta.changeType,
+          change_type_label: meta.label,
+          target_area: "auto",
+          target_area_label: "自动判断",
+          priority: behavior === "new_file" ? "normal" : "high",
+          target_hint: documentName,
+          change_text: document.querySelector("#changeText").value.trim(),
+          source_note: document.querySelector("#sourceNote").value.trim(),
+          sync_exports: document.querySelector("#syncExports").checked,
+          write_log: document.querySelector("#writeLog").checked,
+          files: selectedFiles.map((file) => ({ name: file.name, size: file.size, type: file.type })),
+        };
+      }
+
+      function buildPrompt(payload) {
+        const files = payload.files.length
+          ? payload.files.map((file) => `- ${file.name} (${Math.ceil(file.size / 1024)} KB)`).join("\n")
+          : "- 无";
+        return [
+          "请处理 llm-wiki 的 API 知识库更新请求。",
+          "",
+          "工作目录：D:\\zuhaowan-ai\\llm-wiki\\projects\\api-infra",
+          "边界：只处理 projects/api-infra/，不要读取 projects/agent-learning/。",
+          "",
+          `文档名称：${payload.document_name || "未填写"}`,
+          `行为：${payload.behavior_label}`,
+          `同步 agent-demo 导出：${payload.sync_exports ? "是" : "否"}`,
+          `写入日志：${payload.write_log ? "是" : "否"}`,
+          "",
+          "用户给出的内容：",
+          payload.change_text || "未填写",
+          "",
+          "来源或背景：",
+          payload.source_note || "未填写",
+          "",
+          "附件：",
+          files,
+          "",
+          "处理要求：",
+          "1. 根据文档名称和内容关键词自行检索 api-infra 内的 index、wiki、sources、notes 和 exports。",
+          "2. 自行判断应更新来源笔记、FAQ、概念页、SOP、导出 JSON、search_index 或日志。",
+          "3. 小补丁不要重跑 build_curated_outputs.py，避免覆盖手工补充。",
+          "4. 完成后说明改了哪些文件，并确认 JSON 校验和 search_index 结果。",
+        ].join("\n");
+      }
+
+      function render() {
+        const payload = currentPayload();
+        const meta = behaviorMeta[payload.behavior];
+        document.querySelector("#behaviorLabel").textContent = meta.label;
+        document.querySelector("#promptPreview").textContent = buildPrompt(payload);
+        document.querySelector("#planList").innerHTML = meta.plan
+          .map(
+            (item, index) => `
+              <div class="plan-item">
+                <div class="plan-index">${index + 1}</div>
+                <div class="plan-copy">${escapeHtml(item)}</div>
+              </div>
+            `,
+          )
+          .join("");
+        persistDraft();
+      }
+
+      function renderFiles() {
+        fileList.innerHTML = selectedFiles
+          .map(
+            (file, index) => `
+              <div class="file-item">
+                <span>${escapeHtml(file.name)} · ${Math.ceil(file.size / 1024)} KB</span>
+                <button class="btn small ghost" type="button" data-remove-file="${index}">移除</button>
+              </div>
+            `,
+          )
+          .join("");
+        fileList.querySelectorAll("[data-remove-file]").forEach((button) => {
+          button.addEventListener("click", () => {
+            selectedFiles.splice(Number(button.dataset.removeFile), 1);
+            renderFiles();
+            render();
+          });
+        });
+      }
+
+      function persistDraft() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          localStorage.setItem("llm-wiki-update-console-v2", JSON.stringify(currentPayload()));
+          document.querySelector("#draftState").textContent = "草稿已保存";
+        }, 120);
+      }
+
+      function loadDraft() {
+        const raw = localStorage.getItem("llm-wiki-update-console-v2");
+        if (!raw) return;
+        try {
+          const draft = JSON.parse(raw);
+          if (draft.behavior) {
+            const radio = document.querySelector(`[name="behavior"][value="${draft.behavior}"]`);
+            if (radio) radio.checked = true;
+          }
+          if (draft.document_name) document.querySelector("#documentName").value = draft.document_name;
+          if (draft.change_text) document.querySelector("#changeText").value = draft.change_text;
+          if (draft.source_note) document.querySelector("#sourceNote").value = draft.source_note;
+          if ("sync_exports" in draft) document.querySelector("#syncExports").checked = Boolean(draft.sync_exports);
+          if ("write_log" in draft) document.querySelector("#writeLog").checked = Boolean(draft.write_log);
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function notify(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 2600);
+      }
+
+      async function loadStatus() {
+        if (isStaticPage) {
+          document.querySelector("#projectName").textContent = "api-infra";
+          document.querySelector("#wikiCount").textContent = "在线";
+          document.querySelector("#recordCount").textContent = "生成";
+          document.querySelector("#serverState").textContent = "在线版";
+          renderSuggestions(defaultDocuments);
+          renderRecent([]);
+          return;
+        }
+        try {
+          const response = await fetch("/api/status");
+          if (!response.ok) throw new Error("status failed");
+          const status = await response.json();
+          document.querySelector("#projectName").textContent = status.project;
+          document.querySelector("#wikiCount").textContent = status.wiki_file_count;
+          document.querySelector("#recordCount").textContent = status.search_record_count;
+          document.querySelector("#serverState").textContent = "已连接";
+          renderSuggestions(
+            (status.files || [])
+              .filter((file) => file.path.startsWith("wiki/sources/") || file.path.startsWith("wiki/concepts/") || file.path.startsWith("wiki/faq/") || file.path.startsWith("wiki/sops/"))
+              .slice(0, 80)
+              .map((file) => file.name.replace(/\.md$/, "")),
+          );
+          renderRecent(status.recent_requests || []);
+        } catch (error) {
+          document.querySelector("#serverState").textContent = "离线";
+          renderSuggestions(defaultDocuments);
+          renderRecent([]);
+        }
+      }
+
+      function renderSuggestions(names) {
+        const suggestions = document.querySelector("#documentSuggestions");
+        suggestions.innerHTML = Array.from(new Set(names))
+          .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+          .join("");
+      }
+
+      function renderRecent(items) {
+        document.querySelector("#requestCount").textContent = `${items.length} 条`;
+        document.querySelector("#recentRequests").innerHTML =
+          items.length === 0
+            ? `<div class="request-item"><b>暂无待处理请求</b><span>notes/update-requests</span></div>`
+            : items
+                .map(
+                  (item) => `
+                  <div class="request-item">
+                    <b>${escapeHtml(item.title || item.id)}</b>
+                    <span>${escapeHtml(item.id)} · ${escapeHtml(item.change_type || "")} · ${escapeHtml(item.created_at || "")}</span>
+                  </div>
+                `,
+                )
+                .join("");
+      }
+
+      function addFiles(files) {
+        selectedFiles = selectedFiles.concat(Array.from(files || []));
+        renderFiles();
+        render();
+      }
+
+      async function saveRequest(event) {
+        event.preventDefault();
+        const payload = currentPayload();
+        if (!payload.document_name && payload.behavior !== "new_file") {
+          notify("请先填写文档名称");
+          return;
+        }
+        if (!payload.change_text && selectedFiles.length === 0) {
+          notify("请填写行为内容，或上传附件");
+          return;
+        }
+        if (isStaticPage) {
+          await navigator.clipboard.writeText(buildPrompt(payload)).catch(() => undefined);
+          downloadText("llm-wiki-update-request.txt", buildPrompt(payload));
+          notify("在线版已生成请求，请把下载文件或复制内容发给 Codex");
+          return;
+        }
+        const data = new FormData();
+        data.append("payload", JSON.stringify(payload));
+        selectedFiles.forEach((file) => data.append("files", file));
+        try {
+          const response = await fetch("/api/requests", { method: "POST", body: data });
+          if (!response.ok) throw new Error("request failed");
+          const result = await response.json();
+          notify(`已保存：${result.id}`);
+          selectedFiles = [];
+          renderFiles();
+          await loadStatus();
+        } catch (error) {
+          downloadText("llm-wiki-update-request.txt", buildPrompt(payload));
+          notify("服务未连接，已下载请求文本");
+        }
+      }
+
+      function downloadText(filename, content) {
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      document.querySelectorAll("[data-example]").forEach((card) => {
+        card.addEventListener("click", () => {
+          const example = examples[card.dataset.example];
+          document.querySelector(`[name="behavior"][value="${example.behavior}"]`).checked = true;
+          document.querySelector("#documentName").value = example.document_name;
+          document.querySelector("#changeText").value = example.change_text;
+          document.querySelector("#sourceNote").value = example.source_note;
+          render();
+        });
+      });
+
+      form.addEventListener("input", render);
+      form.addEventListener("change", render);
+      form.addEventListener("submit", saveRequest);
+      document.querySelector("#chooseFiles").addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", () => addFiles(fileInput.files));
+      document.querySelector("#copyPrompt").addEventListener("click", async () => {
+        await navigator.clipboard.writeText(document.querySelector("#promptPreview").textContent);
+        notify("已复制");
+      });
+      document.querySelector("#downloadRequest").addEventListener("click", () => {
+        downloadText("llm-wiki-update-request.txt", document.querySelector("#promptPreview").textContent);
+      });
+      document.querySelector("#resetDraft").addEventListener("click", () => {
+        form.reset();
+        selectedFiles = [];
+        localStorage.removeItem("llm-wiki-update-console-v2");
+        renderFiles();
+        render();
+        notify("已清空");
+      });
+
+      ["dragenter", "dragover"].forEach((name) => {
+        dropzone.addEventListener(name, (event) => {
+          event.preventDefault();
+          dropzone.classList.add("dragover");
+        });
+      });
+      ["dragleave", "drop"].forEach((name) => {
+        dropzone.addEventListener(name, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove("dragover");
+        });
+      });
+      dropzone.addEventListener("drop", (event) => addFiles(event.dataTransfer.files));
+
+      loadDraft();
+      renderFiles();
+      render();
+      loadStatus();
+      setInterval(loadStatus, 12000);
+      if (window.lucide) window.lucide.createIcons();
+    </script>
+  </body>
+</html>
